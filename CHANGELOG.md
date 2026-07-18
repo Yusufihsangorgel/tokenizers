@@ -1,3 +1,9 @@
+## 0.1.1
+
+- Rename the example to `example/hf_tokenizers_example.dart` so it is found
+  under the package's published name.
+- Shorten the pubspec description so it fits pub.dev's 180-character guideline.
+
 ## 0.1.0
 
 - Initial release.

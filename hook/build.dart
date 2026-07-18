@@ -3,8 +3,9 @@ import 'dart:io';
 import 'package:code_assets/code_assets.dart';
 import 'package:hooks/hooks.dart';
 
-/// Keep in sync with `version:` in pubspec.yaml; prebuilt binaries are hosted on
-/// the matching GitHub release tag.
+/// The GitHub release tag that hosts the prebuilt binaries. This tracks the
+/// native crate, not the package version: bump it only when the Rust sources
+/// under `native/` change and a new release carries the rebuilt binaries.
 const _version = '0.1.0';
 const _releaseBase =
     'https://github.com/Yusufihsangorgel/tokenizers/releases/download/v$_version';

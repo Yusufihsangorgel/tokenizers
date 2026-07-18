@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:tokenizers/tokenizers.dart';
+import 'package:hf_tokenizers/hf_tokenizers.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -1,4 +1,4 @@
-name: tokenizers
+name: hf_tokenizers
 description: >-
   HuggingFace tokenizers for Dart over FFI. Load any model's tokenizer.json and
   get byte-exact BPE, byte-level BPE, WordPiece, and Unigram tokenization. Encode

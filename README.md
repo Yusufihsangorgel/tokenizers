@@ -1,6 +1,6 @@
 ![tokenizers: byte-exact tokenization for Dart over FFI](https://raw.githubusercontent.com/Yusufihsangorgel/tokenizers/main/doc/banner.png)
 
-# tokenizers
+# hf_tokenizers
 
 HuggingFace tokenizers for Dart, over FFI. Load any model's `tokenizer.json`
 and get token ids that are byte-exact with the reference implementation.
@@ -15,13 +15,13 @@ output quietly degrades. This package does not reimplement anything: it binds
 the Rust `tokenizers` crate that HuggingFace itself ships, through a thin C ABI.
 
 ```
-dart pub add tokenizers
+dart pub add hf_tokenizers
 ```
 
 ## Use it
 
 ```dart
-import 'package:tokenizers/tokenizers.dart';
+import 'package:hf_tokenizers/hf_tokenizers.dart';
 
 final tk = Tokenizer.fromFile('assets/tokenizer.json');
 

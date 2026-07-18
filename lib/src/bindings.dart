@@ -1,4 +1,4 @@
-@DefaultAsset('package:tokenizers/src/bindings.dart')
+@DefaultAsset('package:hf_tokenizers/src/bindings.dart')
 library;
 
 import 'dart:ffi';

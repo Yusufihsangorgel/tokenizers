@@ -1,6 +1,6 @@
 // Loads a tokenizer.json and shows byte-exact encode/decode.
 // Run: dart run example/tokenizers_example.dart
-import 'package:tokenizers/tokenizers.dart';
+import 'package:hf_tokenizers/hf_tokenizers.dart';
 
 void main() {
   final tk = Tokenizer.fromFile('test/fixtures/bert-base-uncased.json');

@@ -1,0 +1,25 @@
+name: tokenizers
+description: >-
+  HuggingFace tokenizers for Dart over FFI. Load any model's tokenizer.json and
+  get byte-exact BPE, byte-level BPE, WordPiece, and Unigram tokenization. Encode
+  text to token ids and decode them back, backed by the Rust tokenizers crate.
+version: 0.1.0
+repository: https://github.com/Yusufihsangorgel/tokenizers
+topics:
+  - llm
+  - ai
+  - tokenizer
+  - ffi
+  - nlp
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  ffi: ^2.1.0
+  hooks: ^2.1.0
+  code_assets: ^1.2.0
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0

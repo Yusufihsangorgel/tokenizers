@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" font-family="Menlo, monospace">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#38BDF8"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="360" fill="#0B1220"/>
+
+  <!-- title block -->
+  <text x="64" y="150" font-size="58" font-weight="bold" fill="#E2E8F0">tokenizers</text>
+  <text x="66" y="196" font-size="21" fill="#94A3B8">HuggingFace tokenizers for Dart, byte-exact over FFI.</text>
+  <text x="66" y="226" font-size="21" fill="#94A3B8">Load any tokenizer.json. Backed by the Rust crate.</text>
+  <text x="66" y="286" font-size="16" fill="#475569">dart:ffi  ·  BPE / WordPiece / Unigram  ·  encode + decode</text>
+
+  <!-- tokenization motif -->
+  <text x="792" y="120" font-size="18" fill="#64748B">"hello world"</text>
+  <path d="M792 138 l0 26 m0 0 l-6 -7 m6 7 l6 -7" stroke="#38BDF8" stroke-width="1.8" fill="none"/>
+  <text x="792" y="150" font-size="13" fill="#475569">encode</text>
+
+  <!-- token chips -->
+  <g font-size="18" fill="#0B1220" font-weight="bold" text-anchor="middle">
+    <rect x="792" y="176" width="78" height="44" rx="9" fill="#38BDF8"/><text x="831" y="204">101</text>
+    <rect x="882" y="176" width="86" height="44" rx="9" fill="#7DD3FC"/><text x="925" y="204">7592</text>
+    <rect x="980" y="176" width="86" height="44" rx="9" fill="#7DD3FC"/><text x="1023" y="204">2088</text>
+    <rect x="1078" y="176" width="78" height="44" rx="9" fill="#38BDF8"/><text x="1117" y="204">102</text>
+  </g>
+  <text x="792" y="250" font-size="13" fill="#475569">[CLS]      hello      world      [SEP]</text>
+</svg>

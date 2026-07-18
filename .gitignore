@@ -1,0 +1,5 @@
+.dart_tool/
+pubspec.lock
+build/
+.DS_Store
+native/tokenizers_ffi/target/

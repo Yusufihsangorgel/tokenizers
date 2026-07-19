@@ -85,6 +85,46 @@ pub extern "C" fn tk_vocab_size(tk: *const Tokenizer) -> usize {
     tk.get_vocab_size(true)
 }
 
+/// Look up the id of a single token string. Writes the id to `out_id` and
+/// returns `true`, or returns `false` if the token is not in the vocabulary.
+#[no_mangle]
+pub extern "C" fn tk_token_to_id(
+    tk: *const Tokenizer,
+    token: *const c_char,
+    out_id: *mut u32,
+) -> bool {
+    if tk.is_null() || token.is_null() || out_id.is_null() {
+        return false;
+    }
+    let tk = unsafe { &*tk };
+    let s = match unsafe { CStr::from_ptr(token) }.to_str() {
+        Ok(s) => s,
+        Err(_) => return false,
+    };
+    match tk.token_to_id(s) {
+        Some(id) => {
+            unsafe { *out_id = id };
+            true
+        }
+        None => false,
+    }
+}
+
+/// Look up the token string for a single id. Returns a NUL-terminated UTF-8
+/// string (null if the id is not in the vocabulary). Free with
+/// [`tk_free_string`].
+#[no_mangle]
+pub extern "C" fn tk_id_to_token(tk: *const Tokenizer, id: u32) -> *mut c_char {
+    if tk.is_null() {
+        return ptr::null_mut();
+    }
+    let tk = unsafe { &*tk };
+    match tk.id_to_token(id) {
+        Some(s) => CString::new(s).map(CString::into_raw).unwrap_or(ptr::null_mut()),
+        None => ptr::null_mut(),
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn tk_free_ids(p: *mut u32, len: usize) {
     if !p.is_null() {

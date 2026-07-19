@@ -22,6 +22,14 @@ external Pointer<Utf8> tkDecode(
 @Native<IntPtr Function(Pointer<Void>)>(symbol: 'tk_vocab_size')
 external int tkVocabSize(Pointer<Void> tk);
 
+@Native<Bool Function(Pointer<Void>, Pointer<Utf8>, Pointer<Uint32>)>(
+    symbol: 'tk_token_to_id')
+external bool tkTokenToId(
+    Pointer<Void> tk, Pointer<Utf8> token, Pointer<Uint32> outId);
+
+@Native<Pointer<Utf8> Function(Pointer<Void>, Uint32)>(symbol: 'tk_id_to_token')
+external Pointer<Utf8> tkIdToToken(Pointer<Void> tk, int id);
+
 @Native<Void Function(Pointer<Uint32>, IntPtr)>(symbol: 'tk_free_ids')
 external void tkFreeIds(Pointer<Uint32> ids, int len);
 

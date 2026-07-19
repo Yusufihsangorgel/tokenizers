@@ -33,6 +33,38 @@ void main() {
       expect(ids.length, greaterThan(1));
       expect(tk.decode(ids), 'tokenization');
     });
+
+    test('tokenToId looks up single tokens, including special ones', () {
+      // These are the fixed ids bert-base-uncased assigns.
+      expect(tk.tokenToId('[CLS]'), 101);
+      expect(tk.tokenToId('[SEP]'), 102);
+      expect(tk.tokenToId('hello'), 7592);
+    });
+
+    test('tokenToId returns null for a token outside the vocabulary', () {
+      expect(tk.tokenToId('thisisnotarealtoken'), isNull);
+    });
+
+    test('idToToken is the inverse of tokenToId', () {
+      expect(tk.idToToken(101), '[CLS]');
+      expect(tk.idToToken(7592), 'hello');
+      // WordPiece continuation tokens keep their ## marker, unlike decode.
+      final ids = tk.encode('tokenization', addSpecialTokens: false);
+      final pieces = ids.map(tk.idToToken).toList();
+      expect(pieces, ['token', '##ization']);
+    });
+
+    test('idToToken returns null for an id outside the vocabulary', () {
+      expect(tk.idToToken(tk.vocabSize + 1000), isNull);
+    });
+
+    test('tokenToId and idToToken round-trip every encoded id', () {
+      for (final id in tk.encode('the quick brown fox')) {
+        final token = tk.idToToken(id);
+        expect(token, isNotNull);
+        expect(tk.tokenToId(token!), id);
+      }
+    });
   });
 
   test('fromBytes rejects invalid json', () {

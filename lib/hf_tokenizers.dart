@@ -52,6 +52,38 @@ class Tokenizer implements Finalizable {
     return tkVocabSize(_handle);
   }
 
+  /// The id of a single [token] string, or null if it is not in the vocabulary.
+  ///
+  /// Useful for finding a model's special tokens, for example
+  /// `tokenToId('[CLS]')`, without encoding a whole string.
+  int? tokenToId(String token) {
+    _ensureOpen();
+    final input = token.toNativeUtf8(allocator: calloc);
+    final outId = calloc<Uint32>();
+    try {
+      final found = tkTokenToId(_handle, input, outId);
+      return found ? outId.value : null;
+    } finally {
+      calloc.free(input);
+      calloc.free(outId);
+    }
+  }
+
+  /// The token string for a single [id], or null if it is not in the
+  /// vocabulary.
+  ///
+  /// This is the inverse of [tokenToId]. Unlike [decode], it returns the raw
+  /// token, including any sub-word markers the model uses (such as WordPiece's
+  /// `##` prefix), rather than a detokenized piece of text.
+  String? idToToken(int id) {
+    _ensureOpen();
+    final ptr = tkIdToToken(_handle, id);
+    if (ptr == nullptr) return null;
+    final token = ptr.toDartString();
+    tkFreeString(ptr);
+    return token;
+  }
+
   /// Encodes [text] into token ids.
   ///
   /// [addSpecialTokens] controls whether the model's special tokens (such as

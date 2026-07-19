@@ -36,6 +36,29 @@ tk.close(); // optional; a finalizer also frees the native tokenizer
 and so on); pass `addSpecialTokens: false` to skip them. `Tokenizer.fromBytes`
 takes the `tokenizer.json` bytes directly, for assets loaded at runtime.
 
+## Single tokens
+
+To look a token up without encoding a whole string, use `tokenToId` and its
+inverse `idToToken`. Both return null when the token or id is not in the
+vocabulary.
+
+```dart
+tk.tokenToId('[CLS]');   // 101
+tk.tokenToId('hello');   // 7592
+tk.idToToken(101);       // "[CLS]"
+tk.idToToken(7592);      // "hello"
+```
+
+`idToToken` returns the raw token, so it keeps the sub-word markers the model
+uses. That is the difference from `decode`, which detokenizes back to plain
+text:
+
+```dart
+final ids = tk.encode('tokenization', addSpecialTokens: false);
+ids.map(tk.idToToken).toList();  // ["token", "##ization"]  (## kept)
+tk.decode(ids);                  // "tokenization"          (## resolved)
+```
+
 ## What it supports
 
 Whatever the `tokenizer.json` declares. Because it is the real Rust library, the

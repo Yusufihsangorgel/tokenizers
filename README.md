@@ -59,6 +59,25 @@ ids.map(tk.idToToken).toList();  // ["token", "##ization"]  (## kept)
 tk.decode(ids);                  // "tokenization"          (## resolved)
 ```
 
+## Offsets: map tokens back to the text
+
+`encodeWithOffsets` returns each token together with the `[start, end)` span of
+the input it came from, which is what token-accurate chunking, span highlighting,
+and entity extraction need.
+
+```dart
+final text = 'hello world';
+final bytes = utf8.encode(text);
+for (final t in tk.encodeWithOffsets(text, addSpecialTokens: false)) {
+  print(utf8.decode(bytes.sublist(t.start, t.end))); // "hello", then "world"
+}
+```
+
+The offsets are **UTF-8 byte** offsets (what the underlying crate reports), not
+UTF-16 indices, so slice `utf8.encode(text)` rather than `text.substring` or the
+math is off on any non-ASCII input. Special tokens like `[CLS]` come back with an
+empty span (`start == end`).
+
 ## What it supports
 
 Whatever the `tokenizer.json` declares. Because it is the real Rust library, the

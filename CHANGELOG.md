@@ -1,3 +1,15 @@
+## 0.3.0
+
+- Add `encodeWithOffsets`, which returns each token as a `TokenOffset` carrying
+  its id and the `[start, end)` **UTF-8 byte** span of the input it came from.
+  This is what token-accurate chunking, span highlighting, and named-entity
+  extraction need. Offsets are byte offsets (not UTF-16), so slice `utf8.encode`
+  of the input rather than calling `String.substring`; special tokens carry an
+  empty span. `encode` is unchanged for the id-only path.
+- This adds one native symbol (`tk_encode_offsets`), so the prebuilt binaries
+  are rebuilt for this release. The build hook downloads the matching binaries
+  automatically; nothing to install.
+
 ## 0.2.0
 
 - Add `tokenToId` and `idToToken` for single-token lookup in either direction.

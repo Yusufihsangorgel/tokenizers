@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:hf_tokenizers/hf_tokenizers.dart';
@@ -25,6 +26,50 @@ void main() {
     test('decode round-trips', () {
       final ids = tk.encode('the quick brown fox', addSpecialTokens: false);
       expect(tk.decode(ids), 'the quick brown fox');
+    });
+
+    test('encodeWithOffsets keeps ids and maps tokens back to the input', () {
+      const text = 'hello world';
+      final bytes = utf8.encode(text);
+      final tokens = tk.encodeWithOffsets(text, addSpecialTokens: false);
+      // Same ids as encode(), in the same order.
+      expect(tokens.map((t) => t.id).toList(),
+          tk.encode(text, addSpecialTokens: false));
+      // The byte offsets recover the original words (slice the UTF-8 bytes).
+      expect(
+        tokens
+            .map((t) => utf8.decode(bytes.sublist(t.start, t.end)))
+            .toList(),
+        ['hello', 'world'],
+      );
+    });
+
+    test('encodeWithOffsets offsets are UTF-8 byte ranges, not UTF-16', () {
+      // 'é' is two UTF-8 bytes but one UTF-16 unit, so a byte offset past it is
+      // larger than the character index. This is why callers slice the bytes.
+      const text = 'café bar';
+      final bytes = utf8.encode(text);
+      final tokens = tk.encodeWithOffsets(text, addSpecialTokens: false);
+      expect(tokens.last.end, bytes.length); // last token ends at the last byte
+      expect(utf8.decode(bytes.sublist(tokens.last.start, tokens.last.end)),
+          'bar');
+      // The 'bar' token starts at byte 6 (café=5 bytes + space), past the
+      // UTF-16 length would be off by the multibyte 'é'.
+      expect(tokens.last.start, 6);
+    });
+
+    test('encodeWithOffsets gives special tokens an empty range', () {
+      // [CLS] hello world [SEP]: the added specials carry no input span.
+      final tokens = tk.encodeWithOffsets('hello world');
+      expect(tokens.first.id, 101); // [CLS]
+      expect(tokens.first.start, tokens.first.end); // empty range
+      expect(tokens.last.id, 102); // [SEP]
+      expect(tokens.last.start, tokens.last.end);
+      // The middle two carry the real spans.
+      expect(tokens[1].id, 7592);
+      final bytes = utf8.encode('hello world');
+      expect(utf8.decode(bytes.sublist(tokens[1].start, tokens[1].end)),
+          'hello');
     });
 
     test('handles WordPiece splitting of unknown-ish words', () {

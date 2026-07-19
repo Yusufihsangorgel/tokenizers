@@ -14,6 +14,15 @@ external Pointer<Void> tkFromBytes(Pointer<Uint8> data, int len);
 external Pointer<Uint32> tkEncode(
     Pointer<Void> tk, Pointer<Utf8> text, bool addSpecialTokens, Pointer<IntPtr> outLen);
 
+/// Encodes and returns the offsets array (`2 * outLen` `u32`s); writes the ids
+/// array pointer to [outIds] and the token count to [outLen]. Both arrays are
+/// freed with [tkFreeIds] (offsets length is `2 * outLen`).
+@Native<
+    Pointer<Uint32> Function(Pointer<Void>, Pointer<Utf8>, Bool, Pointer<IntPtr>,
+        Pointer<Pointer<Uint32>>)>(symbol: 'tk_encode_offsets')
+external Pointer<Uint32> tkEncodeOffsets(Pointer<Void> tk, Pointer<Utf8> text,
+    bool addSpecialTokens, Pointer<IntPtr> outLen, Pointer<Pointer<Uint32>> outIds);
+
 @Native<Pointer<Utf8> Function(Pointer<Void>, Pointer<Uint32>, IntPtr, Bool)>(
     symbol: 'tk_decode')
 external Pointer<Utf8> tkDecode(

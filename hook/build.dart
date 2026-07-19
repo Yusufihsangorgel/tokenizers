@@ -10,7 +10,7 @@ import 'package:hooks/hooks.dart';
 /// v0.2.0 adds the `tk_token_to_id` and `tk_id_to_token` symbols, so the
 /// binaries under this tag must be the rebuilt ones or a prebuilt install will
 /// fail to resolve them.
-const _version = '0.2.0';
+const _version = '0.3.0';
 const _releaseBase =
     'https://github.com/Yusufihsangorgel/tokenizers/releases/download/v$_version';
 

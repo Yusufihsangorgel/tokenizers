@@ -55,6 +55,59 @@ pub extern "C" fn tk_encode(
     }
 }
 
+/// Encode `text`, returning both the token ids and their offsets into the input.
+///
+/// Writes the token count to `out_len`, stores a heap array of that many `u32`
+/// ids in `*out_ids`, and returns a heap array of `2 * out_len` `u32`s holding
+/// each token's `[start, end)` offset pair, flattened (start0, end0, start1,
+/// end1, ...). Returns null on failure, in which case `*out_ids` is left
+/// untouched. Free BOTH arrays with [`tk_free_ids`] (the offsets array has
+/// length `2 * out_len`). The offsets are whatever the underlying tokenizer
+/// reports, which for the standard `tokenizer.json` models is a byte range into
+/// the input string.
+#[no_mangle]
+pub extern "C" fn tk_encode_offsets(
+    tk: *const Tokenizer,
+    text: *const c_char,
+    add_special_tokens: bool,
+    out_len: *mut usize,
+    out_ids: *mut *mut u32,
+) -> *mut u32 {
+    if tk.is_null() || text.is_null() || out_len.is_null() || out_ids.is_null() {
+        return ptr::null_mut();
+    }
+    let tk = unsafe { &*tk };
+    let s = match unsafe { CStr::from_ptr(text) }.to_str() {
+        Ok(s) => s,
+        Err(_) => return ptr::null_mut(),
+    };
+    match tk.encode(s, add_special_tokens) {
+        Ok(enc) => {
+            let ids = enc.get_ids().to_vec();
+            // Flatten the (start, end) offset pairs into a 2*n u32 array. Offsets
+            // for any real text fit comfortably in u32.
+            let offsets = enc.get_offsets();
+            let mut flat: Vec<u32> = Vec::with_capacity(offsets.len() * 2);
+            for &(start, end) in offsets {
+                flat.push(start as u32);
+                flat.push(end as u32);
+            }
+            unsafe { *out_len = ids.len() };
+            // Hand the ids array out through the out-parameter.
+            let mut ids_boxed = ids.into_boxed_slice();
+            let ids_ptr = ids_boxed.as_mut_ptr();
+            std::mem::forget(ids_boxed);
+            unsafe { *out_ids = ids_ptr };
+            // Return the offsets array.
+            let mut off_boxed = flat.into_boxed_slice();
+            let off_ptr = off_boxed.as_mut_ptr();
+            std::mem::forget(off_boxed);
+            off_ptr
+        }
+        Err(_) => ptr::null_mut(),
+    }
+}
+
 /// Decode `ids` back into text. Returns a NUL-terminated UTF-8 string (null on
 /// failure). Free with [`tk_free_string`].
 #[no_mangle]

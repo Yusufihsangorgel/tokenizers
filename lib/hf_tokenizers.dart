@@ -14,6 +14,41 @@ import 'package:ffi/ffi.dart';
 
 import 'src/bindings.dart';
 
+/// One token from [Tokenizer.encodeWithOffsets]: its [id] and the `[start, end)`
+/// span of the input it came from.
+///
+/// [start] and [end] are **byte** offsets into the UTF-8 encoding of the input,
+/// matching what the underlying `tokenizers` crate reports. For ASCII text a
+/// byte offset equals a character index, but for anything else it does not, so
+/// slice the UTF-8 bytes rather than calling `String.substring` (which counts
+/// UTF-16 units):
+///
+/// ```dart
+/// final bytes = utf8.encode(text);
+/// final piece = utf8.decode(bytes.sublist(token.start, token.end));
+/// ```
+///
+/// This is what token-accurate chunking and span highlighting need. A special
+/// token added by the model (such as `[CLS]`) has an empty span where
+/// `start == end`.
+class TokenOffset {
+  /// Creates a token offset.
+  const TokenOffset(this.id, this.start, this.end);
+
+  /// The token id, the same value [Tokenizer.encode] would return in this
+  /// position.
+  final int id;
+
+  /// The start byte offset of this token in the UTF-8 input (inclusive).
+  final int start;
+
+  /// The end byte offset of this token in the UTF-8 input (exclusive).
+  final int end;
+
+  @override
+  String toString() => 'TokenOffset($id, $start..$end)';
+}
+
 /// A tokenizer loaded from a HuggingFace `tokenizer.json`.
 ///
 /// Backed by the Rust `tokenizers` crate, so every normalizer, pre-tokenizer,
@@ -101,6 +136,41 @@ class Tokenizer implements Finalizable {
     } finally {
       calloc.free(input);
       calloc.free(outLen);
+    }
+  }
+
+  /// Encodes [text] into tokens, keeping each token's byte span in the input.
+  ///
+  /// Like [encode], but every token comes back as a [TokenOffset] carrying the
+  /// `[start, end)` UTF-8 byte range it was produced from, so you can map tokens
+  /// back to the text (see [TokenOffset] for how to slice with those offsets).
+  /// This is what token-accurate chunking, span highlighting and named-entity
+  /// extraction need. [addSpecialTokens] behaves as in [encode].
+  List<TokenOffset> encodeWithOffsets(String text,
+      {bool addSpecialTokens = true}) {
+    _ensureOpen();
+    final input = text.toNativeUtf8(allocator: calloc);
+    final outLen = calloc<IntPtr>();
+    final outIds = calloc<Pointer<Uint32>>();
+    try {
+      final offsetsPtr =
+          tkEncodeOffsets(_handle, input, addSpecialTokens, outLen, outIds);
+      if (offsetsPtr == nullptr) throw StateError('Failed to encode text');
+      final count = outLen.value;
+      final idsPtr = outIds.value;
+      final ids = idsPtr.asTypedList(count);
+      final offsets = offsetsPtr.asTypedList(count * 2);
+      final result = [
+        for (var i = 0; i < count; i++)
+          TokenOffset(ids[i], offsets[i * 2], offsets[i * 2 + 1]),
+      ];
+      tkFreeIds(idsPtr, count);
+      tkFreeIds(offsetsPtr, count * 2);
+      return result;
+    } finally {
+      calloc.free(input);
+      calloc.free(outLen);
+      calloc.free(outIds);
     }
   }
 

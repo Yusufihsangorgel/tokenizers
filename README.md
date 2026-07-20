@@ -78,6 +78,31 @@ UTF-16 indices, so slice `utf8.encode(text)` rather than `text.substring` or the
 math is off on any non-ASCII input. Special tokens like `[CLS]` come back with an
 empty span (`start == end`).
 
+## Token budgets
+
+Context windows and embedding endpoints are measured in tokens, but Dart
+strings are measured in UTF-16 units, so the usual "about four characters per
+token" guess either wastes budget or overshoots it. These cut where the
+tokenizer says, not where a guess says.
+
+```dart
+// The longest prefix that fits, cut on a token boundary.
+final head = tk.truncateToTokens(document, 512);
+
+// Or split the whole document into pieces that each fit an embedding model's
+// input limit, with a little context repeated across the seams.
+for (final chunk in tk.chunkByTokens(document, 256, overlapTokens: 32)) {
+  await embed(chunk);
+}
+```
+
+Both count what the model counts. BERT adds `[CLS]` and `[SEP]`, so a budget of
+512 leaves 510 for text, and a budget smaller than the markers themselves is
+rejected rather than quietly answered with an empty string that would still
+encode to two tokens. Cuts land on token boundaries, which are UTF-8
+boundaries, so no character is split; with no overlap the pieces concatenate
+back to the original text, whitespace included.
+
 ## What it supports
 
 Whatever the `tokenizer.json` declares. Because it is the real Rust library, the

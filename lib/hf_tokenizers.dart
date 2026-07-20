@@ -6,6 +6,7 @@
 /// Rust implementation, so they match what the model was trained on.
 library;
 
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
@@ -188,6 +189,156 @@ class Tokenizer implements Finalizable {
     } finally {
       calloc.free(array);
     }
+  }
+
+  /// Returns the longest prefix of [text] that encodes to at most [maxTokens]
+  /// tokens.
+  ///
+  /// Model context windows and embedding endpoints are measured in tokens, but
+  /// `String.substring` counts UTF-16 units, so the usual guess of "about four
+  /// characters per token" either wastes budget or overshoots it. This cuts at
+  /// the exact boundary the tokenizer itself reports.
+  ///
+  /// ```dart
+  /// final head = tk.truncateToTokens(document, 512);
+  /// ```
+  ///
+  /// The cut lands on a token boundary, which is always a UTF-8 boundary, so
+  /// no character is split in half. [addSpecialTokens] is passed through and
+  /// counts toward the budget the same way the model will count it: with
+  /// BERT's `[CLS]` and `[SEP]`, a budget of 512 leaves 510 for text.
+  ///
+  /// Returns [text] unchanged when it already fits, and an empty string when
+  /// [maxTokens] is 0. Throws [ArgumentError] if [maxTokens] is negative, or
+  /// if it is smaller than the number of special tokens the model adds: with
+  /// BERT's two, no text at all fits a budget of 1 or 2, and returning an
+  /// empty string would still encode to 2.
+  String truncateToTokens(
+    String text,
+    int maxTokens, {
+    bool addSpecialTokens = true,
+  }) {
+    if (maxTokens < 0) {
+      throw ArgumentError.value(maxTokens, 'maxTokens', 'must not be negative');
+    }
+    if (maxTokens == 0 || text.isEmpty) return '';
+    final tokens = encodeWithOffsets(text, addSpecialTokens: addSpecialTokens);
+    if (tokens.length <= maxTokens) return text;
+
+    // Special tokens own no bytes, and the model appends them to whatever it
+    // is given, so the whole set has to come off the budget up front. Counting
+    // only the ones inside the first maxTokens would leave the trailing [SEP]
+    // unaccounted for, and the result would re-encode one token over.
+    final spans = [for (final t in tokens) if (t.end > t.start) t];
+    final specialCount = tokens.length - spans.length;
+    final keep = maxTokens - specialCount;
+    if (keep < 1) {
+      // Returning an empty string here would be a trap: it still encodes to
+      // specialCount tokens, so the budget this call exists to enforce would
+      // be blown by its own result. Say so instead.
+      throw ArgumentError.value(
+        maxTokens,
+        'maxTokens',
+        'leaves no room for text: the model adds $specialCount special '
+            'token(s), so even an empty string encodes to $specialCount',
+      );
+    }
+
+    var cut = 0;
+    for (var i = 0; i < keep && i < spans.length; i++) {
+      if (spans[i].end > cut) cut = spans[i].end;
+    }
+    if (cut == 0) return '';
+    return utf8.decode(utf8.encode(text).sublist(0, cut));
+  }
+
+  /// Splits [text] into consecutive pieces that each encode to at most
+  /// [maxTokens] tokens.
+  ///
+  /// This is what an embedding model's input limit actually asks for.
+  /// Character-window chunking has to guess a safe size and still overshoots
+  /// on dense text, where one token can be a single byte; here every piece is
+  /// measured with the tokenizer that will see it.
+  ///
+  /// ```dart
+  /// for (final chunk in tk.chunkByTokens(document, 256, overlapTokens: 32)) {
+  ///   await embed(chunk);
+  /// }
+  /// ```
+  ///
+  /// [overlapTokens] repeats that many tokens of context at the start of each
+  /// following piece, which keeps a sentence split across a boundary
+  /// retrievable from either side. Pieces are cut on token boundaries, so
+  /// concatenating them with no overlap reproduces [text].
+  ///
+  /// [addSpecialTokens] is passed through, so each piece leaves room for the
+  /// markers the model adds. Returns an empty list for empty [text]. Throws
+  /// [ArgumentError] if [maxTokens] is below 1, or if [overlapTokens] is
+  /// negative or not smaller than [maxTokens], which would never advance.
+  List<String> chunkByTokens(
+    String text,
+    int maxTokens, {
+    int overlapTokens = 0,
+    bool addSpecialTokens = true,
+  }) {
+    if (maxTokens < 1) {
+      throw ArgumentError.value(maxTokens, 'maxTokens', 'must be at least 1');
+    }
+    if (overlapTokens < 0) {
+      throw ArgumentError.value(
+        overlapTokens,
+        'overlapTokens',
+        'must not be negative',
+      );
+    }
+    if (overlapTokens >= maxTokens) {
+      throw ArgumentError.value(
+        overlapTokens,
+        'overlapTokens',
+        'must be smaller than maxTokens ($maxTokens), or chunking never '
+            'advances',
+      );
+    }
+    if (text.isEmpty) return const [];
+
+    final tokens = encodeWithOffsets(text, addSpecialTokens: addSpecialTokens);
+    // Special tokens sit outside the text, so drop them before slicing: they
+    // consume budget but own no bytes to cut on.
+    final spans = [for (final t in tokens) if (t.end > t.start) t];
+    if (spans.isEmpty) return const [];
+
+    // Budget counts what the model counts, so the markers come off the top.
+    final specialCount = tokens.length - spans.length;
+    final perChunk = maxTokens - specialCount;
+    if (perChunk < 1) {
+      throw ArgumentError.value(
+        maxTokens,
+        'maxTokens',
+        'leaves no room for text after $specialCount special token(s)',
+      );
+    }
+    final step = perChunk - overlapTokens;
+
+    final bytes = utf8.encode(text);
+    final chunks = <String>[];
+    // Where the next piece begins. Following pieces start where the previous
+    // one ended rather than at their first token, because the bytes in between
+    // (the whitespace no token claims) belong to the text too and would
+    // otherwise vanish. With an overlap the start deliberately moves back.
+    var cursor = 0;
+    for (var start = 0; start < spans.length; start += step) {
+      final end = start + perChunk < spans.length
+          ? start + perChunk
+          : spans.length;
+      final from = (overlapTokens > 0 && start > 0) ? spans[start].start : cursor;
+      var to = spans[end - 1].end;
+      // The last piece keeps any trailing bytes, so the pieces cover the input.
+      if (end == spans.length) to = bytes.length;
+      chunks.add(utf8.decode(bytes.sublist(from, to)));
+      cursor = to;
+      if (end == spans.length) break;
+    }
+    return chunks;
   }
 
   /// Frees the native tokenizer now.

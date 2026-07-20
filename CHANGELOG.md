@@ -1,3 +1,18 @@
+## 0.4.0
+
+- Add `truncateToTokens` and `chunkByTokens`. Context windows and embedding
+  limits are counted in tokens while Dart strings are counted in UTF-16 units,
+  so callers were left to slice byte offsets by hand; both of these cut where
+  the tokenizer says. Cuts land on token boundaries, which are UTF-8
+  boundaries, and with no overlap the chunks concatenate back to the input,
+  whitespace between tokens included.
+- Both reserve budget for the special tokens the model appends, not just the
+  ones that happen to appear in the window being kept, so a truncated string
+  re-encodes within the budget rather than one token over. A budget smaller
+  than the markers themselves is rejected: with BERT's `[CLS]` and `[SEP]`,
+  even an empty string encodes to two, so answering with one would break the
+  budget the call exists to enforce.
+
 ## 0.3.0
 
 - Add `encodeWithOffsets`, which returns each token as a `TokenOffset` carrying

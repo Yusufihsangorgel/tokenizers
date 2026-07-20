@@ -1,3 +1,9 @@
+## 0.4.2
+
+- Declare the recording in `pubspec.yaml` so pub.dev renders it on the package
+  page. It was already in the repository and the README, but pub.dev shows only
+  what the `screenshots:` field points at.
+
 ## 0.4.1
 
 - `example/context_budget.dart`: the three things a token budget needs, each

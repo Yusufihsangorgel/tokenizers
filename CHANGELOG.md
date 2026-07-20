@@ -1,3 +1,22 @@
+## 0.4.1
+
+- `example/context_budget.dart`: the three things a token budget needs, each
+  checked in the output rather than described. It counts a prompt against the
+  rule of thumb everyone reaches for (a quarter of a token per character, which
+  undercounts this prompt by 8%, and undercounting is the direction that gets a
+  request rejected), truncates to a budget and re-encodes the result to show it
+  fits, and chunks with overlap and counts how many pieces came out over
+  budget. Takes a `tokenizer.json` path so it can be pointed at the model you
+  actually call.
+- `example/README.md` explains what to take from that output, and why byte-exact
+  ids are the foundation under it: a context budget does not degrade
+  gracefully, it is fine until the request is refused.
+- The original example no longer presents its hand-written chunking loop as the
+  way to split a document. `chunkByTokens` has done that since 0.4.0, including
+  the whitespace between token spans and the special tokens the model adds; the
+  loop stays as the primitive to reach for when you need a window rule of your
+  own.
+
 ## 0.4.0
 
 - Add `truncateToTokens` and `chunkByTokens`. Context windows and embedding

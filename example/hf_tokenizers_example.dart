@@ -16,12 +16,17 @@ void main() {
   print('encode("$text") -> $ids'); // [101, 7592, 2088, 102]
   print('decode($ids) -> "${tk.decode(ids)}"');
 
-  // Use case: chunk a document to a token budget, keeping each chunk's text.
+  // Chunking by hand, to show the primitive underneath.
   //
-  // A retrieval pipeline must split long text into pieces small enough for the
-  // model's context, but it also needs the original characters of each piece to
-  // store and show. encodeWithOffsets gives both: the tokens (to count against
-  // the budget) and the byte span (to recover the text).
+  // `tk.chunkByTokens(document, 12)` does this in one call and handles the
+  // parts left out below: the whitespace between two token spans, the special
+  // tokens the model adds on top of each piece, and overlap across the seam.
+  // Reach for the loop only when you need a window rule of your own, for
+  // instance breaking on sentences that happen to fit. See
+  // example/context_budget.dart for the direct route.
+  //
+  // encodeWithOffsets is what makes either possible: it gives the tokens (to
+  // count against the budget) and the byte span (to recover the text).
   const document =
       'Native tokenization runs in Dart. It is byte-exact with the '
       'reference implementation, so retrieval and generation agree on token '

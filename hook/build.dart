@@ -27,16 +27,32 @@ void main(List<String> args) async {
     final localName = _localLibraryName(os);
 
     Uri? library;
+    var downloadFailed = false;
 
     // 1) Prebuilt binary from the release: no toolchain required.
     final asset = _prebuiltAssetName(os, arch);
     if (asset != null) {
       final dest = input.outputDirectory.resolve(localName);
-      if (await _download('$_releaseBase/$asset', dest)) library = dest;
+      if (await _download('$_releaseBase/$asset', dest)) {
+        library = dest;
+      } else {
+        // A prebuilt is published for this target but could not be fetched:
+        // offline, proxied, or GitHub rate-limited. Fall through to a source
+        // build, but remember why, so if that also fails the message names the
+        // real first cause instead of blaming a missing toolchain.
+        downloadFailed = true;
+      }
     }
 
-    // 2) Build from source with cargo (needs a Rust toolchain).
-    library ??= await _cargoBuild(crateDir, localName);
+    // 2) Build from source with cargo (needs a Rust toolchain, and a host
+    //    whose target matches: this hook does not cross-compile).
+    library ??= await _cargoBuild(
+      crateDir,
+      localName,
+      os,
+      arch,
+      downloadFailed: downloadFailed,
+    );
 
     output.assets.code.add(
       CodeAsset(
@@ -91,22 +107,76 @@ Future<bool> _download(String url, Uri dest) async {
   }
 }
 
-Future<Uri> _cargoBuild(Uri crateDir, String localName) async {
-  final result = await Process.run(
-    _resolveCargo(),
-    ['build', '--release'],
-    workingDirectory: crateDir.toFilePath(),
-    environment: _envWithCargoBin(),
-  );
-  if (result.exitCode != 0) {
+Future<Uri> _cargoBuild(
+  Uri crateDir,
+  String localName,
+  OS os,
+  Architecture arch, {
+  required bool downloadFailed,
+}) async {
+  // `cargo build` compiles for the host. This hook passes no `--target`, so it
+  // can only produce a library for the platform it runs on. A build targeting
+  // Android or iOS from a desktop host would emit the wrong binary (or none),
+  // so refuse it up front with a message that says what is missing rather than
+  // failing obscurely deeper in.
+  if (os == OS.android || os == OS.iOS) {
     throw Exception(
-      'No prebuilt binary for this platform, and building from source failed '
-      '(exit ${result.exitCode}). Install a Rust toolchain from '
-      'https://rustup.rs, or use a platform with a published prebuilt.\n'
-      '${result.stdout}\n${result.stderr}',
+      'hf_tokenizers has no prebuilt binary for $os and cannot cross-compile '
+      'it from source: the build hook builds for the host only. $os support '
+      'needs a prebuilt in the GitHub release, which is not published yet. '
+      'Track it at https://github.com/Yusufihsangorgel/tokenizers.',
     );
   }
+
+  final ProcessResult result;
+  try {
+    result = await Process.run(
+      _resolveCargo(),
+      ['build', '--release'],
+      workingDirectory: crateDir.toFilePath(),
+      environment: _envWithCargoBin(),
+    );
+  } on ProcessException catch (error) {
+    // cargo is not on PATH: Process.run throws rather than returning a
+    // non-zero exit, so without this the hook crashes with a raw
+    // ProcessException instead of telling the user what to install.
+    throw Exception(_sourceBuildMessage(
+      os,
+      arch,
+      'no Rust toolchain was found (${error.message})',
+      downloadFailed: downloadFailed,
+    ));
+  }
+  if (result.exitCode != 0) {
+    throw Exception(_sourceBuildMessage(
+      os,
+      arch,
+      'the source build failed (exit ${result.exitCode})\n'
+          '${result.stdout}\n${result.stderr}',
+      downloadFailed: downloadFailed,
+    ));
+  }
   return crateDir.resolve('target/release/$localName');
+}
+
+/// A build-failure message that names the real first cause. A prebuilt exists
+/// for the desktop targets, so the usual reason a source build runs at all is
+/// that the download failed; say so, rather than pointing at the toolchain.
+String _sourceBuildMessage(
+  OS os,
+  Architecture arch,
+  String detail, {
+  required bool downloadFailed,
+}) {
+  final lead = downloadFailed
+      ? 'The prebuilt binary for $os $arch could not be downloaded '
+          '(offline, proxied, or rate-limited?), and the source-build '
+          'fallback then failed'
+      : 'No prebuilt binary is published for $os $arch, and the source-build '
+          'fallback failed';
+  return '$lead: $detail\n'
+      'Install a Rust toolchain from https://rustup.rs, or build on a target '
+      'with a published prebuilt (macOS arm64/x64, Linux x64, Windows x64).';
 }
 
 /// `Process.run` does not inherit the login shell's PATH, so rustup's default

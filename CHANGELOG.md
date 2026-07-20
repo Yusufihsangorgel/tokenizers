@@ -1,3 +1,16 @@
+## 0.4.5
+
+- The build hook no longer crashes with a raw `ProcessException` when there is
+  no prebuilt for the target and no Rust toolchain to fall back on. A missing
+  `cargo` now produces a message that names the platform and points at
+  rustup, and it distinguishes "no prebuilt exists for this target" from "the
+  prebuilt could not be downloaded" so the reported cause is the real one.
+- Android and iOS builds now fail immediately with a clear message instead of
+  attempting a host build that cannot produce a mobile binary. The hook builds
+  for the host only, so cross-compiled targets need a published prebuilt, which
+  is not there yet. The README carries an honest platform table: prebuilt on
+  macOS/Linux-x64/Windows-x64, source build elsewhere, mobile not supported yet.
+
 ## 0.4.4
 
 - Widen the native-toolchain constraints so the package can be installed in a

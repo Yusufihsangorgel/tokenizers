@@ -117,13 +117,28 @@ ids against known-good values from HuggingFace, including WordPiece splitting an
 a decode round-trip. Token ids that match the reference are the whole point, so
 they are checked, not assumed.
 
-## Status and platforms
+## Platforms
 
-This is `0.1.0`. It is proven on macOS (arm64): the Rust crate builds and the
-ids are byte-exact. Building from source needs a Rust toolchain; a pub build hook
-that runs `cargo` and bundles the library is in progress, and prebuilt binaries
-plus Linux and Windows coverage follow. The platform table will stay honest about
-what is verified.
+The native library loads one of two ways: a prebuilt binary fetched from the
+GitHub release (no toolchain needed), or a source build with `cargo` as a
+fallback. The source build compiles for the host, so it needs a Rust toolchain
+and a host that matches the target.
+
+| Target                        | How it loads            | Needs a toolchain |
+| ----------------------------- | ----------------------- | ----------------- |
+| macOS arm64, macOS x64        | prebuilt                | no                |
+| Linux x64                     | prebuilt                | no                |
+| Windows x64                   | prebuilt                | no                |
+| Any of the above, offline     | source build (fallback) | yes (Rust)        |
+| Linux arm64                   | source build            | yes (Rust)        |
+| **Android, iOS**              | **not supported yet**   | —                 |
+
+Android and iOS need cross-compiled prebuilts, which are not published yet, so
+adding the package to a mobile Flutter target fails at build time with a message
+that says exactly that rather than a confusing toolchain error. This is a
+server-side and desktop package today; mobile support is tracked on the repo.
+The `sdk:flutter` tag means it works in a Flutter **desktop** app, not on a
+phone.
 
 ## License
 

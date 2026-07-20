@@ -2,7 +2,7 @@ name: hf_tokenizers
 description: >-
   HuggingFace tokenizers for Dart over FFI. Load any tokenizer.json and get
   byte-exact BPE, WordPiece, and Unigram encoding, backed by the Rust crate.
-version: 0.4.3
+version: 0.4.4
 repository: https://github.com/Yusufihsangorgel/tokenizers
 topics:
   - llm
@@ -22,7 +22,7 @@ environment:
 
 dependencies:
   ffi: ^2.1.0
-  hooks: ^2.1.0
+  hooks: '>=2.0.2 <3.0.0'
   code_assets: ^1.2.0
 
 dev_dependencies:

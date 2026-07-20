@@ -1,3 +1,9 @@
+## 0.4.3
+
+- Shorten the screenshot description. pub.dev accepts up to 200 characters but
+  scores only those under 160, so the previous release published cleanly and
+  quietly gave up the documentation points it was meant to earn.
+
 ## 0.4.2
 
 - Declare the recording in `pubspec.yaml` so pub.dev renders it on the package

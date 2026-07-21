@@ -5,9 +5,22 @@
 //! Every pointer returned here is owned by the caller and must be released with
 //! the matching `tk_free_*` function.
 
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 use std::os::raw::c_char;
 use std::ptr;
+
+/// Reads `len` bytes at `ptr` as UTF-8. Unlike a NUL-terminated `CStr`, this
+/// carries an explicit length, so an embedded U+0000 byte is part of the text
+/// rather than the end of it. Returns `None` if `ptr` is null or the bytes are
+/// not valid UTF-8. `unsafe`: the caller guarantees `ptr` points at `len`
+/// readable bytes.
+unsafe fn str_from_raw<'a>(ptr: *const u8, len: usize) -> Option<&'a str> {
+    if ptr.is_null() {
+        return None;
+    }
+    let bytes = std::slice::from_raw_parts(ptr, len);
+    std::str::from_utf8(bytes).ok()
+}
 
 use tokenizers::Tokenizer;
 
@@ -25,12 +38,16 @@ pub extern "C" fn tk_from_bytes(data: *const u8, len: usize) -> *mut Tokenizer {
     }
 }
 
-/// Encode `text` into token ids. Writes the id count to `out_len` and returns a
-/// heap array of that many `u32`s (null on failure). Free with [`tk_free_ids`].
+/// Encode the `text_len` UTF-8 bytes at `text` into token ids. Writes the id
+/// count to `out_len` and returns a heap array of that many `u32`s (null on
+/// failure). The length is explicit, so a U+0000 byte inside the text is
+/// encoded rather than treated as the end of the string. Free with
+/// [`tk_free_ids`].
 #[no_mangle]
 pub extern "C" fn tk_encode(
     tk: *const Tokenizer,
-    text: *const c_char,
+    text: *const u8,
+    text_len: usize,
     add_special_tokens: bool,
     out_len: *mut usize,
 ) -> *mut u32 {
@@ -38,9 +55,9 @@ pub extern "C" fn tk_encode(
         return ptr::null_mut();
     }
     let tk = unsafe { &*tk };
-    let s = match unsafe { CStr::from_ptr(text) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return ptr::null_mut(),
+    let s = match unsafe { str_from_raw(text, text_len) } {
+        Some(s) => s,
+        None => return ptr::null_mut(),
     };
     match tk.encode(s, add_special_tokens) {
         Ok(enc) => {
@@ -68,7 +85,8 @@ pub extern "C" fn tk_encode(
 #[no_mangle]
 pub extern "C" fn tk_encode_offsets(
     tk: *const Tokenizer,
-    text: *const c_char,
+    text: *const u8,
+    text_len: usize,
     add_special_tokens: bool,
     out_len: *mut usize,
     out_ids: *mut *mut u32,
@@ -77,9 +95,9 @@ pub extern "C" fn tk_encode_offsets(
         return ptr::null_mut();
     }
     let tk = unsafe { &*tk };
-    let s = match unsafe { CStr::from_ptr(text) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return ptr::null_mut(),
+    let s = match unsafe { str_from_raw(text, text_len) } {
+        Some(s) => s,
+        None => return ptr::null_mut(),
     };
     match tk.encode(s, add_special_tokens) {
         Ok(enc) => {
@@ -138,21 +156,23 @@ pub extern "C" fn tk_vocab_size(tk: *const Tokenizer) -> usize {
     tk.get_vocab_size(true)
 }
 
-/// Look up the id of a single token string. Writes the id to `out_id` and
-/// returns `true`, or returns `false` if the token is not in the vocabulary.
+/// Look up the id of a single token string, given as `token_len` UTF-8 bytes at
+/// `token`. Writes the id to `out_id` and returns `true`, or returns `false` if
+/// the token is not in the vocabulary.
 #[no_mangle]
 pub extern "C" fn tk_token_to_id(
     tk: *const Tokenizer,
-    token: *const c_char,
+    token: *const u8,
+    token_len: usize,
     out_id: *mut u32,
 ) -> bool {
     if tk.is_null() || token.is_null() || out_id.is_null() {
         return false;
     }
     let tk = unsafe { &*tk };
-    let s = match unsafe { CStr::from_ptr(token) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return false,
+    let s = match unsafe { str_from_raw(token, token_len) } {
+        Some(s) => s,
+        None => return false,
     };
     match tk.token_to_id(s) {
         Some(id) => {

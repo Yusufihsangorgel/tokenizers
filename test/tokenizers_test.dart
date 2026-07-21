@@ -23,6 +23,20 @@ void main() {
       expect(tk.encode('hello world', addSpecialTokens: false), [7592, 2088]);
     });
 
+    test('a U+0000 byte does not truncate the input', () {
+      // The old FFI passed a NUL-terminated buffer, so a U+0000 cut the text
+      // off at the first NUL and every token after it was lost. With an
+      // explicit byte length the whole string reaches the tokenizer.
+      const withNul = 'hello\u0000world';
+      final ids = tk.encode(withNul, addSpecialTokens: false);
+      // The bytes after the NUL contribute tokens the truncating version could
+      // never see.
+      expect(ids.length,
+          greaterThan(tk.encode('hello', addSpecialTokens: false).length));
+      // And that content survives the round trip.
+      expect(tk.decode(ids), contains('world'));
+    });
+
     test('decode round-trips', () {
       final ids = tk.encode('the quick brown fox', addSpecialTokens: false);
       expect(tk.decode(ids), 'the quick brown fox');

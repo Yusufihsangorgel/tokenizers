@@ -15,6 +15,22 @@ import 'package:ffi/ffi.dart';
 
 import 'src/bindings.dart';
 
+/// Copies [text] as UTF-8 into a freshly `calloc`ed buffer and returns the
+/// pointer with the byte length.
+///
+/// The FFI encode/lookup calls take an explicit length, so a U+0000 byte inside
+/// [text] is passed through rather than cutting the string short the way a
+/// NUL-terminated buffer would. The buffer is at least one byte, so the pointer
+/// is never null even for empty input; free it with `calloc.free`.
+(Pointer<Uint8>, int) _allocUtf8(String text) {
+  final bytes = utf8.encode(text);
+  final ptr = calloc<Uint8>(bytes.isEmpty ? 1 : bytes.length);
+  if (bytes.isNotEmpty) {
+    ptr.asTypedList(bytes.length).setAll(0, bytes);
+  }
+  return (ptr, bytes.length);
+}
+
 /// One token from [Tokenizer.encodeWithOffsets]: its [id] and the `[start, end)`
 /// span of the input it came from.
 ///
@@ -94,10 +110,10 @@ class Tokenizer implements Finalizable {
   /// `tokenToId('[CLS]')`, without encoding a whole string.
   int? tokenToId(String token) {
     _ensureOpen();
-    final input = token.toNativeUtf8(allocator: calloc);
+    final (input, inputLen) = _allocUtf8(token);
     final outId = calloc<Uint32>();
     try {
-      final found = tkTokenToId(_handle, input, outId);
+      final found = tkTokenToId(_handle, input, inputLen, outId);
       return found ? outId.value : null;
     } finally {
       calloc.free(input);
@@ -126,10 +142,10 @@ class Tokenizer implements Finalizable {
   /// BERT's `[CLS]`/`[SEP]`) are added, matching the reference default of true.
   List<int> encode(String text, {bool addSpecialTokens = true}) {
     _ensureOpen();
-    final input = text.toNativeUtf8(allocator: calloc);
+    final (input, inputLen) = _allocUtf8(text);
     final outLen = calloc<IntPtr>();
     try {
-      final ptr = tkEncode(_handle, input, addSpecialTokens, outLen);
+      final ptr = tkEncode(_handle, input, inputLen, addSpecialTokens, outLen);
       if (ptr == nullptr) throw StateError('Failed to encode text');
       final ids = ptr.asTypedList(outLen.value).toList();
       tkFreeIds(ptr, outLen.value);
@@ -150,12 +166,12 @@ class Tokenizer implements Finalizable {
   List<TokenOffset> encodeWithOffsets(String text,
       {bool addSpecialTokens = true}) {
     _ensureOpen();
-    final input = text.toNativeUtf8(allocator: calloc);
+    final (input, inputLen) = _allocUtf8(text);
     final outLen = calloc<IntPtr>();
     final outIds = calloc<Pointer<Uint32>>();
     try {
-      final offsetsPtr =
-          tkEncodeOffsets(_handle, input, addSpecialTokens, outLen, outIds);
+      final offsetsPtr = tkEncodeOffsets(
+          _handle, input, inputLen, addSpecialTokens, outLen, outIds);
       if (offsetsPtr == nullptr) throw StateError('Failed to encode text');
       final count = outLen.value;
       final idsPtr = outIds.value;

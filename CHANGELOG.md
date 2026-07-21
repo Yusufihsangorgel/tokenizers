@@ -1,3 +1,13 @@
+## 0.5.0
+
+- Fix a truncation bug: text containing a U+0000 byte was silently cut at the
+  first NUL, so `encode`, `encodeWithOffsets`, `tokenToId` and the chunking
+  built on them returned wrong counts on any document with an embedded NUL. The
+  FFI now passes an explicit byte length instead of relying on NUL termination,
+  so the whole input reaches the tokenizer and the ids stay byte-exact with the
+  reference. This changes the native ABI, so the build hook now tracks release
+  `v0.4.0` of the prebuilt binaries; a clean rebuild picks it up automatically.
+
 ## 0.4.5
 
 - The build hook no longer crashes with a raw `ProcessException` when there is

@@ -10,7 +10,12 @@ import 'package:hooks/hooks.dart';
 /// v0.2.0 adds the `tk_token_to_id` and `tk_id_to_token` symbols, so the
 /// binaries under this tag must be the rebuilt ones or a prebuilt install will
 /// fail to resolve them.
-const _version = '0.3.0';
+///
+/// v0.4.0 changes `tk_encode`, `tk_encode_offsets` and `tk_token_to_id` to take
+/// an explicit `(pointer, length)` instead of a NUL-terminated string, so the
+/// binaries under this tag are ABI-incompatible with the older Dart bindings:
+/// the tag must move in lockstep with the package that ships those bindings.
+const _version = '0.4.0';
 const _releaseBase =
     'https://github.com/Yusufihsangorgel/tokenizers/releases/download/v$_version';
 

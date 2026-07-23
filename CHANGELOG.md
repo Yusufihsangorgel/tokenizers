@@ -1,3 +1,21 @@
+## 0.5.1
+
+- Fix a crash: the build hook's prebuilt-binary tag was left at `v0.4.0` after
+  0.5.0 changed the native ABI (`tk_encode`, `tk_encode_offsets` and
+  `tk_token_to_id` moved from a NUL-terminated string to an explicit
+  `(pointer, length)` pair). `v0.4.0` still serves the old signatures, so any
+  install that took the prebuilt path silently got an ABI-mismatched binary:
+  the new bindings' extra length argument landed in the slot the old binary
+  reads as an output pointer, and it segfaulted on the first real call. The
+  hook now tracks `v0.5.0`, the tag that actually carries the rebuilt
+  binaries.
+- Declare `platforms: {linux, macos, windows}` in `pubspec.yaml`. The build
+  hook has never produced a binary for Android or iOS (it throws there
+  rather than attempting a host build that cannot target them), but with no
+  platform declaration pub.dev's tagger inferred support for all five
+  platforms from static analysis alone. The badge now matches what the hook
+  actually builds.
+
 ## 0.5.0
 
 - Fix a truncation bug: text containing a U+0000 byte was silently cut at the
@@ -6,7 +24,7 @@
   FFI now passes an explicit byte length instead of relying on NUL termination,
   so the whole input reaches the tokenizer and the ids stay byte-exact with the
   reference. This changes the native ABI, so the build hook now tracks release
-  `v0.4.0` of the prebuilt binaries; a clean rebuild picks it up automatically.
+  `v0.5.0` of the prebuilt binaries; a clean rebuild picks it up automatically.
 
 ## 0.4.5
 

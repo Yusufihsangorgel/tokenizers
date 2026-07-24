@@ -31,6 +31,10 @@ import 'src/bindings.dart';
   return (ptr, bytes.length);
 }
 
+/// The largest token id the native side can take: vocabularies are indexed by
+/// `uint32`, and anything above this would wrap into a different, valid id.
+const int _maxTokenId = 0xFFFFFFFF;
+
 /// One token from [Tokenizer.encodeWithOffsets]: its [id] and the `[start, end)`
 /// span of the input it came from.
 ///
@@ -48,7 +52,7 @@ import 'src/bindings.dart';
 /// This is what token-accurate chunking and span highlighting need. A special
 /// token added by the model (such as `[CLS]`) has an empty span where
 /// `start == end`.
-class TokenOffset {
+final class TokenOffset {
   /// Creates a token offset.
   const TokenOffset(this.id, this.start, this.end);
 
@@ -63,6 +67,16 @@ class TokenOffset {
   final int end;
 
   @override
+  bool operator ==(Object other) =>
+      other is TokenOffset &&
+      other.id == id &&
+      other.start == start &&
+      other.end == end;
+
+  @override
+  int get hashCode => Object.hash(id, start, end);
+
+  @override
   String toString() => 'TokenOffset($id, $start..$end)';
 }
 
@@ -71,7 +85,7 @@ class TokenOffset {
 /// Backed by the Rust `tokenizers` crate, so every normalizer, pre-tokenizer,
 /// model (BPE, byte-level BPE, WordPiece, Unigram), and post-processor in the
 /// file is applied exactly as the reference does.
-class Tokenizer implements Finalizable {
+final class Tokenizer implements Finalizable {
   Tokenizer._(this._handle) {
     _finalizer.attach(this, _handle.cast(), detach: this);
   }
@@ -127,8 +141,12 @@ class Tokenizer implements Finalizable {
   /// This is the inverse of [tokenToId]. Unlike [decode], it returns the raw
   /// token, including any sub-word markers the model uses (such as WordPiece's
   /// `##` prefix), rather than a detokenized piece of text.
+  ///
+  /// An [id] outside the `uint32` range the vocabulary is indexed by is not in
+  /// it either, so this returns null rather than letting the value wrap.
   String? idToToken(int id) {
     _ensureOpen();
+    if (id < 0 || id > _maxTokenId) return null;
     final ptr = tkIdToToken(_handle, id);
     if (ptr == nullptr) return null;
     final token = ptr.toDartString();
@@ -192,8 +210,23 @@ class Tokenizer implements Finalizable {
   }
 
   /// Decodes token [ids] back into text.
+  ///
+  /// Throws [ArgumentError] if an id falls outside the `uint32` range the
+  /// vocabulary is indexed by. The native call takes `uint32`, so such a value
+  /// would otherwise be truncated into a different, valid id and decode to the
+  /// wrong token instead of failing.
   String decode(List<int> ids, {bool skipSpecialTokens = true}) {
     _ensureOpen();
+    for (var i = 0; i < ids.length; i++) {
+      final id = ids[i];
+      if (id < 0 || id > _maxTokenId) {
+        throw ArgumentError.value(
+          id,
+          'ids[$i]',
+          'token id must be between 0 and $_maxTokenId',
+        );
+      }
+    }
     final array = calloc<Uint32>(ids.length);
     array.asTypedList(ids.length).setAll(0, ids);
     try {
@@ -287,10 +320,21 @@ class Tokenizer implements Finalizable {
   /// retrievable from either side. Pieces are cut on token boundaries, so
   /// concatenating them with no overlap reproduces [text].
   ///
+  /// Each piece is re-encoded to confirm it fits, because tokenization is
+  /// context-dependent: a WordPiece continuation such as `##ization` is one
+  /// token inside `internationalization` but two when the same bytes lead a
+  /// piece. The one case that cannot be made to fit is a budget so small that
+  /// a single token of the input, standing alone, already exceeds it — there
+  /// is nothing left to split. That takes a budget of about three with BERT;
+  /// real embedding limits are nowhere near it.
+  ///
   /// [addSpecialTokens] is passed through, so each piece leaves room for the
   /// markers the model adds. Returns an empty list for empty [text]. Throws
   /// [ArgumentError] if [maxTokens] is below 1, or if [overlapTokens] is
-  /// negative or not smaller than [maxTokens], which would never advance.
+  /// negative, or if it is not smaller than the room a chunk actually has for
+  /// text — `maxTokens` less the special tokens the model adds — because then
+  /// chunking would never advance. With BERT's two, a budget of 8 leaves 6, so
+  /// the overlap has to be 5 or less.
   List<String> chunkByTokens(
     String text,
     int maxTokens, {
@@ -334,6 +378,20 @@ class Tokenizer implements Finalizable {
       );
     }
     final step = perChunk - overlapTokens;
+    // The constructor-time check compares overlapTokens against maxTokens, but
+    // what a chunk actually has room for is perChunk, which is smaller by the
+    // special tokens. An overlap between the two passes that check and lands
+    // here with step <= 0: at 0 the cursor never advances and this loops
+    // forever, below 0 it walks backwards into spans[-1].
+    if (step < 1) {
+      throw ArgumentError.value(
+        overlapTokens,
+        'overlapTokens',
+        'must be smaller than the $perChunk token(s) each chunk has room for '
+            '(maxTokens $maxTokens less $specialCount special token(s)), or '
+            'chunking never advances',
+      );
+    }
 
     final bytes = utf8.encode(text);
     final chunks = <String>[];
@@ -342,17 +400,40 @@ class Tokenizer implements Finalizable {
     // (the whitespace no token claims) belong to the text too and would
     // otherwise vanish. With an overlap the start deliberately moves back.
     var cursor = 0;
-    for (var start = 0; start < spans.length; start += step) {
-      final end = start + perChunk < spans.length
+    var start = 0;
+    while (start < spans.length) {
+      var end = start + perChunk < spans.length
           ? start + perChunk
           : spans.length;
       final from = (overlapTokens > 0 && start > 0) ? spans[start].start : cursor;
-      var to = spans[end - 1].end;
-      // The last piece keeps any trailing bytes, so the pieces cover the input.
-      if (end == spans.length) to = bytes.length;
-      chunks.add(utf8.decode(bytes.sublist(from, to)));
-      cursor = to;
+
+      // Counting the spans is not enough: tokenization depends on context, so
+      // a piece can cost more tokens on its own than it did inside the whole
+      // text. A WordPiece continuation is the clear case — `##ization` is one
+      // token inside `internationalization`, but the same bytes leading a
+      // chunk re-encode as `i` + `##zation`. Since the budget this method
+      // exists to enforce is checked against the piece the caller actually
+      // sends, measure that piece and give back a span until it fits.
+      String piece;
+      while (true) {
+        final to = end == spans.length ? bytes.length : spans[end - 1].end;
+        piece = utf8.decode(bytes.sublist(from, to));
+        // A single span is one token of the input and cannot be split further.
+        if (end - start <= 1) break;
+        if (encode(piece, addSpecialTokens: addSpecialTokens).length <=
+            maxTokens) {
+          break;
+        }
+        end--;
+      }
+      chunks.add(piece);
+      cursor = end == spans.length ? bytes.length : spans[end - 1].end;
       if (end == spans.length) break;
+      // Advance by what this piece actually consumed, not by the nominal step,
+      // because shrinking above may have made it shorter. The floor of 1 keeps
+      // an overlap wider than a shrunken piece from stalling the loop.
+      final advance = (end - start) - overlapTokens;
+      start += advance < 1 ? 1 : advance;
     }
     return chunks;
   }

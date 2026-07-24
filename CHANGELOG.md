@@ -1,3 +1,41 @@
+## 1.0.0
+
+First stable release. The API below is what 1.0 freezes.
+
+- **Fix `chunkByTokens` handing back pieces over the budget.** It counted the
+  tokens of the whole text and assumed a slice of those bytes would re-encode
+  to the same count. Tokenization is context-dependent, so it does not: with
+  bert-base-uncased, `##ization` is one token inside `internationalization` but
+  re-encodes as `i` + `##zation` when the same bytes lead a piece, and the
+  piece came back one token over the limit it exists to enforce. Each piece is
+  now re-encoded and shrunk until it fits. The one case left is a budget so
+  small that a single token of the input already exceeds it alone — about three
+  with BERT, with nothing left to split — and that is now documented.
+- **Fix a hang and a crash in `chunkByTokens`.** The guard compared
+  `overlapTokens` against `maxTokens`, but a chunk's real room is `maxTokens`
+  less the special tokens the model adds. An overlap between the two passed the
+  guard: at equality the cursor stopped advancing and the call looped forever
+  appending pieces, and one above it stepped backwards and threw `RangeError`.
+  With BERT's two specials, `chunkByTokens(text, 5, overlapTokens: 3)` hung and
+  `chunkByTokens(text, 3, overlapTokens: 2)` threw. Both now raise
+  `ArgumentError` naming the room actually available.
+- **Fix `decode` silently returning the wrong text.** Token ids cross to the
+  native side as `uint32`, so an id outside that range was truncated into a
+  different, valid id: `decode([1 << 40])` came back as `[PAD]`. Out-of-range
+  ids now throw `ArgumentError` instead of decoding to something plausible.
+- **Fix `idToToken` breaking its own contract.** It documents "null if it is
+  not in the vocabulary", but the same truncation made `idToToken(1 << 32)` and
+  `idToToken(1 << 40)` return the token for id 0. They return null now.
+- `TokenOffset` gets `==` and `hashCode`, so offsets compare by value.
+- `Tokenizer` and `TokenOffset` are `final`. Both were already unsafe to
+  subclass — `Tokenizer` owns a native handle and a finalizer — and this is the
+  release to say so.
+- Add a test that hashes the Rust crate and compares it against a digest stored
+  next to the prebuilt release tag in the build hook. 0.5.0 changed the native
+  ABI, left the tag on the previous release, and shipped a segfault to every
+  prebuilt install for two days; the hook already carried a comment saying to
+  bump the tag, and a comment cannot fail a build. This can.
+
 ## 0.5.1
 
 - Fix a crash: the build hook's prebuilt-binary tag was left at `v0.4.0` after

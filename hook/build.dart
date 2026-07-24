@@ -20,6 +20,18 @@ import 'package:hooks/hooks.dart';
 /// silently hand the new bindings a binary that reads the wrong argument as
 /// `out_len` and crashes.
 const _version = '0.5.0';
+
+/// SHA-256 over the crate sources the binaries under [_version] were built
+/// from, in the order `test/prebuilt_tag_test.dart` hashes them. Public
+/// because that test is the only reader: the hook itself never needs it.
+///
+/// The comment above says to bump the tag whenever `native/` changes, and 0.5.0
+/// shipped anyway with the tag left behind — every prebuilt install segfaulted
+/// on the first call for two days. A note cannot fail; this can. Change the
+/// crate and the test goes red until the tag moves and a release carries the
+/// rebuilt binaries.
+const nativeSourcesDigest =
+    'ee63b883e1219c17d3c868b20323f3ad8de07d3167aa9a7d449ca1655161fb64';
 const _releaseBase =
     'https://github.com/Yusufihsangorgel/tokenizers/releases/download/v$_version';
 

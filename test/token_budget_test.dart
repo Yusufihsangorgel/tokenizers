@@ -145,6 +145,50 @@ void main() {
       );
     });
 
+    test('every piece really fits the budget when re-encoded', () {
+      // Counting spans in the whole text is not enough, because tokenization
+      // is context-dependent: cutting inside `internationalization` used to
+      // hand back a piece that led with `##ization` and re-encoded to two
+      // tokens where the count assumed one, putting the piece over budget.
+      const wordy =
+          'tokenization internationalization antidisestablishmentarianism';
+      for (final text in [_mixed, wordy]) {
+        for (var budget = 8; budget <= 40; budget++) {
+          for (final overlap in [0, 1, 3]) {
+            for (final chunk in tk.chunkByTokens(
+              text,
+              budget,
+              overlapTokens: overlap,
+            )) {
+              expect(
+                tk.encode(chunk).length,
+                lessThanOrEqualTo(budget),
+                reason: 'budget $budget overlap $overlap: '
+                    '${jsonEncode(chunk)}',
+              );
+            }
+          }
+        }
+      }
+    });
+
+    test('an overlap that only special tokens make too large is rejected', () {
+      // BERT adds two, so a budget of 10 leaves 8 for text. An overlap of 8 or
+      // 9 is under maxTokens and passes the cheap check, but leaves a step of
+      // 0 or -1: the first looped forever, the second walked off the front of
+      // the token list.
+      expect(
+        () => tk.chunkByTokens(_mixed, 10, overlapTokens: 8),
+        throwsArgumentError,
+      );
+      expect(
+        () => tk.chunkByTokens(_mixed, 10, overlapTokens: 9),
+        throwsArgumentError,
+      );
+      // One below the real room still works.
+      expect(tk.chunkByTokens(_mixed, 10, overlapTokens: 7), isNotEmpty);
+    });
+
     test('a budget with no room left after special tokens is rejected', () {
       // BERT adds two, so a budget of 2 leaves nothing for text.
       expect(() => tk.chunkByTokens(_mixed, 2), throwsArgumentError);

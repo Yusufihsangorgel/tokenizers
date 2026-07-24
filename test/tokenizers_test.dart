@@ -117,6 +117,34 @@ void main() {
       expect(tk.idToToken(tk.vocabSize + 1000), isNull);
     });
 
+    test('idToToken returns null for an id that does not fit a uint32', () {
+      // The native lookup takes a uint32, so 1 << 32 and 1 << 40 both used to
+      // wrap to 0 and come back as that id's token instead of null.
+      expect(tk.idToToken(0), isNotNull, reason: 'id 0 is a real token');
+      expect(tk.idToToken(1 << 32), isNull);
+      expect(tk.idToToken(1 << 40), isNull);
+      expect(tk.idToToken(-1), isNull);
+    });
+
+    test('TokenOffset values with the same fields are equal', () {
+      final a = tk.encodeWithOffsets('the quick brown fox');
+      final b = tk.encodeWithOffsets('the quick brown fox');
+      expect(a, b);
+      expect(a.toSet().length, lessThanOrEqualTo(a.length));
+      expect(
+        const TokenOffset(1, 0, 3) == const TokenOffset(1, 0, 4),
+        isFalse,
+      );
+    });
+
+    test('decode rejects an id that does not fit a uint32', () {
+      // Truncating into a different valid id would decode to the wrong token
+      // rather than fail: 1 << 40 came back as [PAD].
+      expect(() => tk.decode([1 << 40]), throwsArgumentError);
+      expect(() => tk.decode([-1]), throwsArgumentError);
+      expect(() => tk.decode([101, 1 << 32, 102]), throwsArgumentError);
+    });
+
     test('tokenToId and idToToken round-trip every encoded id', () {
       for (final id in tk.encode('the quick brown fox')) {
         final token = tk.idToToken(id);

@@ -31,9 +31,13 @@ void main() {
         reason: '$path is hashed into the digest but is missing; if the crate '
             'was reorganised, update both this list and the digest',
       );
+      // Hash the text with normalised line endings. Git checks these files
+      // out as CRLF on Windows, so hashing raw bytes made the digest
+      // platform-dependent and the guard fired on every Windows CI run — a
+      // check that cries wolf is a check people learn to ignore.
       input
         ..addAll(utf8.encode(path))
-        ..addAll(file.readAsBytesSync());
+        ..addAll(utf8.encode(file.readAsStringSync().replaceAll('\r\n', '\n')));
     }
     final actual = sha256.convert(input).toString();
 

@@ -31,8 +31,10 @@ void main() {
       final ids = tk.encode(withNul, addSpecialTokens: false);
       // The bytes after the NUL contribute tokens the truncating version could
       // never see.
-      expect(ids.length,
-          greaterThan(tk.encode('hello', addSpecialTokens: false).length));
+      expect(
+        ids.length,
+        greaterThan(tk.encode('hello', addSpecialTokens: false).length),
+      );
       // And that content survives the round trip.
       expect(tk.decode(ids), contains('world'));
     });
@@ -47,13 +49,13 @@ void main() {
       final bytes = utf8.encode(text);
       final tokens = tk.encodeWithOffsets(text, addSpecialTokens: false);
       // Same ids as encode(), in the same order.
-      expect(tokens.map((t) => t.id).toList(),
-          tk.encode(text, addSpecialTokens: false));
+      expect(
+        tokens.map((t) => t.id).toList(),
+        tk.encode(text, addSpecialTokens: false),
+      );
       // The byte offsets recover the original words (slice the UTF-8 bytes).
       expect(
-        tokens
-            .map((t) => utf8.decode(bytes.sublist(t.start, t.end)))
-            .toList(),
+        tokens.map((t) => utf8.decode(bytes.sublist(t.start, t.end))).toList(),
         ['hello', 'world'],
       );
     });
@@ -65,8 +67,10 @@ void main() {
       final bytes = utf8.encode(text);
       final tokens = tk.encodeWithOffsets(text, addSpecialTokens: false);
       expect(tokens.last.end, bytes.length); // last token ends at the last byte
-      expect(utf8.decode(bytes.sublist(tokens.last.start, tokens.last.end)),
-          'bar');
+      expect(
+        utf8.decode(bytes.sublist(tokens.last.start, tokens.last.end)),
+        'bar',
+      );
       // The 'bar' token starts at byte 6 (café=5 bytes + space), past the
       // UTF-16 length would be off by the multibyte 'é'.
       expect(tokens.last.start, 6);
@@ -82,8 +86,10 @@ void main() {
       // The middle two carry the real spans.
       expect(tokens[1].id, 7592);
       final bytes = utf8.encode('hello world');
-      expect(utf8.decode(bytes.sublist(tokens[1].start, tokens[1].end)),
-          'hello');
+      expect(
+        utf8.decode(bytes.sublist(tokens[1].start, tokens[1].end)),
+        'hello',
+      );
     });
 
     test('handles WordPiece splitting of unknown-ish words', () {
@@ -130,11 +136,11 @@ void main() {
       final a = tk.encodeWithOffsets('the quick brown fox');
       final b = tk.encodeWithOffsets('the quick brown fox');
       expect(a, b);
-      expect(a.toSet().length, lessThanOrEqualTo(a.length));
-      expect(
-        const TokenOffset(1, 0, 3) == const TokenOffset(1, 0, 4),
-        isFalse,
-      );
+      // Values from two separate calls have to collapse into one another. A
+      // set built from just one of them proves nothing: a Set is never larger
+      // than the list it came from, whatever == and hashCode do.
+      expect({...a, ...b}, hasLength(a.length));
+      expect(const TokenOffset(1, 0, 3) == const TokenOffset(1, 0, 4), isFalse);
     });
 
     test('decode rejects an id that does not fit a uint32', () {
@@ -164,5 +170,21 @@ void main() {
   test('using a closed tokenizer throws', () {
     final tk = Tokenizer.fromFile(fixture)..close();
     expect(() => tk.encode('x'), throwsStateError);
+  });
+
+  test('closing twice is safe', () {
+    // The second call has to return early rather than free the handle again.
+    final tk = Tokenizer.fromFile(fixture)..close();
+    expect(tk.close, returnsNormally);
+    expect(() => tk.encode('x'), throwsStateError);
+  });
+
+  test('decode drops special tokens unless asked to keep them', () {
+    final tk = Tokenizer.fromFile(fixture);
+    addTearDown(tk.close);
+    final ids = tk.encode('hello world');
+
+    expect(tk.decode(ids), 'hello world');
+    expect(tk.decode(ids, skipSpecialTokens: false), '[CLS] hello world [SEP]');
   });
 }

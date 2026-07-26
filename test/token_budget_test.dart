@@ -33,9 +33,12 @@ void main() {
     test('it is a prefix of the input, cut on a character boundary', () {
       final head = tk.truncateToTokens(_mixed, 12);
       expect(_mixed.startsWith(head), isTrue);
-      // Decoding succeeded at all, so the cut did not land inside a character;
-      // re-encoding the bytes proves it round-trips.
-      expect(utf8.decode(utf8.encode(head)), head);
+      // A cut inside a multi-byte character shows up as a byte-length that is
+      // not a prefix length of the input's UTF-8. Round-tripping `head`
+      // through utf8 would not show it: `head` is already a String by the time
+      // the test sees it, so that assertion holds whatever the cut did.
+      final headBytes = utf8.encode(head);
+      expect(utf8.encode(_mixed).sublist(0, headBytes.length), headBytes);
     });
 
     test('text that already fits comes back unchanged', () {
@@ -48,8 +51,11 @@ void main() {
     });
 
     test('a bigger budget never gives back less text', () {
-      var previous = 0;
-      for (final budget in [3, 6, 10, 20, 40]) {
+      const budgets = [3, 6, 10, 20, 40];
+      // Seeded from the first result, not from 0: a zero seed makes the first
+      // comparison hold for any string at all.
+      var previous = tk.truncateToTokens(_mixed, budgets.first).length;
+      for (final budget in budgets.skip(1)) {
         final length = tk.truncateToTokens(_mixed, budget).length;
         expect(length, greaterThanOrEqualTo(previous));
         previous = length;
@@ -74,10 +80,12 @@ void main() {
       expect(() => tk.truncateToTokens(_mixed, 2), throwsArgumentError);
       // Without the markers there is nothing to reserve, so 1 is fine.
       expect(
-        tk.encode(
-          tk.truncateToTokens(_mixed, 1, addSpecialTokens: false),
-          addSpecialTokens: false,
-        ).length,
+        tk
+            .encode(
+              tk.truncateToTokens(_mixed, 1, addSpecialTokens: false),
+              addSpecialTokens: false,
+            )
+            .length,
         lessThanOrEqualTo(1),
       );
     });
@@ -124,11 +132,10 @@ void main() {
     });
 
     test('non-ASCII chunks decode cleanly', () {
-      const turkish = 'Ölçüm yapmadan iddia etme. Şeftali, ığdır, çğüöşi. 🍰🍰🍰';
-      for (final chunk in tk.chunkByTokens(turkish, 4)) {
-        // A cut inside a multi-byte character would have thrown on decode.
-        expect(utf8.decode(utf8.encode(chunk)), chunk);
-      }
+      const turkish =
+          'Ölçüm yapmadan iddia etme. Şeftali, ığdır, çğüöşi. 🍰🍰🍰';
+      // Re-encoding each chunk would prove nothing: a chunk is already a
+      // String. Joining them back is what shows no character was split.
       expect(tk.chunkByTokens(turkish, 4).join(), turkish);
     });
 
@@ -163,7 +170,8 @@ void main() {
               expect(
                 tk.encode(chunk).length,
                 lessThanOrEqualTo(budget),
-                reason: 'budget $budget overlap $overlap: '
+                reason:
+                    'budget $budget overlap $overlap: '
                     '${jsonEncode(chunk)}',
               );
             }

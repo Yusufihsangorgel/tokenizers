@@ -127,17 +127,28 @@ and a host that matches the target.
 | Target                        | How it loads            | Needs a toolchain |
 | ----------------------------- | ----------------------- | ----------------- |
 | macOS arm64, macOS x64        | prebuilt                | no                |
-| Linux x64                     | prebuilt                | no                |
+| Linux x64 (glibc ≥ 2.34)      | prebuilt                | no                |
 | Windows x64                   | prebuilt                | no                |
 | Any of the above, offline     | source build (fallback) | yes (Rust)        |
 | Linux arm64                   | source build            | yes (Rust)        |
 | **Android, iOS**              | **not supported yet**   | —                 |
 
+The prebuilt Linux binary is linked against glibc 2.34 or newer. On an older
+distribution the loader refuses it — on Debian 11, which ships glibc 2.31,
+`ldd` reports `version 'GLIBC_2.34' not found`. Check yours with
+`ldd --version`.
+
+The source build does not rescue this. The hook falls back to `cargo` only when
+the prebuilt cannot be *downloaded*; a download that succeeds is used as-is, so
+on an older distribution the failure surfaces when the library is loaded rather
+than at build time. Installing Rust does not change that on its own. Lowering
+the floor means rebuilding the release binaries against an older glibc.
+
 Android and iOS need cross-compiled prebuilts, which are not published yet, so
 adding the package to a mobile Flutter target fails at build time with a message
 that says exactly that rather than a confusing toolchain error. This is a
-server-side and desktop package today; mobile support is tracked on the repo.
-The `sdk:flutter` tag means it works in a Flutter **desktop** app, not on a
+server-side and desktop package today. The `sdk:flutter` tag means it works in
+a Flutter **desktop** app, not on a
 phone.
 
 ## License

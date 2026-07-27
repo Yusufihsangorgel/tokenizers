@@ -148,8 +148,7 @@ Android and iOS need cross-compiled prebuilts, which are not published yet, so
 adding the package to a mobile Flutter target fails at build time with a message
 that says exactly that rather than a confusing toolchain error. This is a
 server-side and desktop package today. The `sdk:flutter` tag means it works in
-a Flutter **desktop** app, not on a
-phone.
+a Flutter **desktop** app, not on a phone.
 
 ## License
 

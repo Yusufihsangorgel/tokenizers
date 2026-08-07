@@ -21,7 +21,9 @@ pleasantries. If the thread contains a stack trace, keep only the top frame:
 NoSuchMethodError: 'call' on null at package:acme/sync.dart:412:9.''';
 
 void main(List<String> args) {
-  final path = args.isEmpty ? 'test/fixtures/bert-base-uncased.json' : args.first;
+  final path = args.isEmpty
+      ? 'test/fixtures/bert-base-uncased.json'
+      : args.first;
   final tk = Tokenizer.fromFile(path);
 
   // 1. The counts are the reference implementation's counts, not an
@@ -29,8 +31,10 @@ void main(List<String> args) {
   //    wrong in a way nothing would report until a request was rejected.
   final reference = tk.encode('hello world');
   print('encode("hello world") -> $reference');
-  print('byte-exact with the reference implementation: '
-      '${reference.toString() == '[101, 7592, 2088, 102]' ? 'yes' : 'no'}\n');
+  print(
+    'byte-exact with the reference implementation: '
+    '${reference.toString() == '[101, 7592, 2088, 102]' ? 'yes' : 'no'}\n',
+  );
 
   // 2. What the usual shortcut costs. Estimating a quarter of a token per
   //    character is the rule of thumb everyone reaches for, and it is wrong by
@@ -42,8 +46,10 @@ void main(List<String> args) {
   print('a ${_prompt.length}-character prompt');
   print('  chars / 4 says   $estimate tokens');
   print('  the tokenizer says $actual tokens');
-  print('  the shortcut is ${off.abs()}% ${off < 0 ? 'under' : 'over'}, and '
-      '${off < 0 ? 'under is the direction that overflows' : 'over just wastes budget'}\n');
+  print(
+    '  the shortcut is ${off.abs()}% ${off < 0 ? 'under' : 'over'}, and '
+    '${off < 0 ? 'under is the direction that overflows' : 'over just wastes budget'}\n',
+  );
 
   // 3. Cutting to fit. The cut lands on a token boundary, so no character is
   //    split, and the special tokens the model adds come off the budget up
@@ -52,14 +58,18 @@ void main(List<String> args) {
   final head = tk.truncateToTokens(_prompt, budget);
   final headTokens = tk.encode(head).length;
   print('truncateToTokens(prompt, $budget)');
-  print('  kept ${head.length} characters, which re-encode to $headTokens '
-      'tokens${headTokens <= budget ? ' (fits)' : ' (OVER BUDGET)'}');
+  print(
+    '  kept ${head.length} characters, which re-encode to $headTokens '
+    'tokens${headTokens <= budget ? ' (fits)' : ' (OVER BUDGET)'}',
+  );
   print('  ...${head.substring(head.length - 48).replaceAll('\n', ' ')}\n');
 
   // 4. Splitting for retrieval. Overlap repeats context across the seam so a
   //    sentence cut in half is still findable from either piece.
   final chunks = tk.chunkByTokens(_prompt, 24, overlapTokens: 6);
-  print('chunkByTokens(prompt, 24, overlapTokens: 6) -> ${chunks.length} pieces');
+  print(
+    'chunkByTokens(prompt, 24, overlapTokens: 6) -> ${chunks.length} pieces',
+  );
   for (final (i, chunk) in chunks.indexed) {
     final n = tk.encode(chunk).length;
     print('  ${i + 1}. [$n tok] ${chunk.trim().replaceAll('\n', ' ')}');

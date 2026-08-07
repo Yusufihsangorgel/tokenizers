@@ -28,7 +28,8 @@ void main() {
       expect(
         file.existsSync(),
         isTrue,
-        reason: '$path is hashed into the digest but is missing; if the crate '
+        reason:
+            '$path is hashed into the digest but is missing; if the crate '
             'was reorganised, update both this list and the digest',
       );
       // Hash the text with normalised line endings. Git checks these files
@@ -42,8 +43,9 @@ void main() {
     final actual = sha256.convert(input).toString();
 
     final hook = File('hook/build.dart').readAsStringSync();
-    final digest = RegExp(r"nativeSourcesDigest\s*=\s*\n?\s*'([0-9a-f]{64})'")
-        .firstMatch(hook);
+    final digest = RegExp(
+      r"nativeSourcesDigest\s*=\s*\n?\s*'([0-9a-f]{64})'",
+    ).firstMatch(hook);
     final tag = RegExp(r"_version\s*=\s*'([^']+)'").firstMatch(hook);
     expect(digest, isNotNull, reason: 'hook/build.dart has no digest constant');
     expect(tag, isNotNull, reason: 'hook/build.dart has no _version constant');
@@ -51,7 +53,8 @@ void main() {
     expect(
       actual,
       digest!.group(1),
-      reason: 'The crate under native/ has changed since the binaries on '
+      reason:
+          'The crate under native/ has changed since the binaries on '
           'release v${tag!.group(1)} were built. Publishing now would hand '
           'every prebuilt install a stale library. Cut a release with the '
           'rebuilt binaries, point _version at its tag, and set '

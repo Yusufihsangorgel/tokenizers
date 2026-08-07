@@ -50,8 +50,10 @@ void main() {
   final svg = _svg(whole, pieces, before: whole.length, after: after);
   final out = File('doc/token_split.svg')..parent.createSync(recursive: true);
   out.writeAsStringSync(svg);
-  stdout.writeln('wrote ${out.path} (${svg.length} bytes): '
-      '${whole.length} tokens whole, $after in pieces');
+  stdout.writeln(
+    'wrote ${out.path} (${svg.length} bytes): '
+    '${whole.length} tokens whole, $after in pieces',
+  );
 }
 
 String _svg(
@@ -62,27 +64,38 @@ String _svg(
 }) {
   const w = 720.0, unit = 26.0, left = 40.0;
   final b = StringBuffer()
-    ..writeln('<svg xmlns="http://www.w3.org/2000/svg" width="$w" height="300" '
-        'viewBox="0 0 $w 300" font-family="ui-monospace, SFMono-Regular, '
-        'Menlo, monospace">')
-    ..writeln('<style>'
-        '.lbl{font:600 13px ui-sans-serif,system-ui,sans-serif;fill:#57606a}'
-        '.cnt{font:700 15px ui-sans-serif,system-ui,sans-serif}'
-        '.tok{font:600 13px ui-monospace,monospace;fill:#0d1117}'
-        '.box{fill:#ddf4ff;stroke:#54aeff;stroke-width:1.5;rx:5}'
-        '.box2{fill:#fff1e5;stroke:#fb8f44;stroke-width:1.5;rx:5}'
-        '.cut{stroke:#cf222e;stroke-width:2;stroke-dasharray:5 4}'
-        '@media(prefers-color-scheme:dark){'
-        '.lbl{fill:#8b949e}.tok{fill:#0d1117}}'
-        '</style>');
+    ..writeln(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="$w" height="300" '
+      'viewBox="0 0 $w 300" font-family="ui-monospace, SFMono-Regular, '
+      'Menlo, monospace">',
+    )
+    ..writeln(
+      '<style>'
+      '.lbl{font:600 13px ui-sans-serif,system-ui,sans-serif;fill:#57606a}'
+      '.cnt{font:700 15px ui-sans-serif,system-ui,sans-serif}'
+      '.tok{font:600 13px ui-monospace,monospace;fill:#0d1117}'
+      '.box{fill:#ddf4ff;stroke:#54aeff;stroke-width:1.5;rx:5}'
+      '.box2{fill:#fff1e5;stroke:#fb8f44;stroke-width:1.5;rx:5}'
+      '.cut{stroke:#cf222e;stroke-width:2;stroke-dasharray:5 4}'
+      '@media(prefers-color-scheme:dark){'
+      '.lbl{fill:#8b949e}.tok{fill:#0d1117}}'
+      '</style>',
+    );
 
-  void row(double y, List<({String text, double x, double w, bool hot})> boxes) {
+  void row(
+    double y,
+    List<({String text, double x, double w, bool hot})> boxes,
+  ) {
     for (final t in boxes) {
       b
-        ..writeln('<rect class="${t.hot ? "box2" : "box"}" x="${t.x}" y="$y" '
-            'width="${t.w}" height="34" rx="5"/>')
-        ..writeln('<text class="tok" x="${t.x + t.w / 2}" y="${y + 22}" '
-            'text-anchor="middle">${_esc(t.text)}</text>');
+        ..writeln(
+          '<rect class="${t.hot ? "box2" : "box"}" x="${t.x}" y="$y" '
+          'width="${t.w}" height="34" rx="5"/>',
+        )
+        ..writeln(
+          '<text class="tok" x="${t.x + t.w / 2}" y="${y + 22}" '
+          'text-anchor="middle">${_esc(t.text)}</text>',
+        );
     }
   }
 
@@ -97,15 +110,23 @@ String _svg(
   }
   row(48, top);
   b
-    ..writeln('<text class="cnt" x="${w - 40}" y="70" text-anchor="end" '
-        'fill="#1a7f37">$before tokens</text>')
+    ..writeln(
+      '<text class="cnt" x="${w - 40}" y="70" text-anchor="end" '
+      'fill="#1a7f37">$before tokens</text>',
+    )
     // the cut
-    ..writeln('<line class="cut" x1="${left + whole.first.end * unit}" y1="40" '
-        'x2="${left + whole.first.end * unit}" y2="180"/>')
-    ..writeln('<text class="lbl" x="${left + whole.first.end * unit + 8}" '
-        'y="118" fill="#cf222e">chunk boundary</text>')
-    ..writeln('<text class="lbl" x="$left" y="172">'
-        'same bytes, each piece encoded on its own</text>');
+    ..writeln(
+      '<line class="cut" x1="${left + whole.first.end * unit}" y1="40" '
+      'x2="${left + whole.first.end * unit}" y2="180"/>',
+    )
+    ..writeln(
+      '<text class="lbl" x="${left + whole.first.end * unit + 8}" '
+      'y="118" fill="#cf222e">chunk boundary</text>',
+    )
+    ..writeln(
+      '<text class="lbl" x="$left" y="172">'
+      'same bytes, each piece encoded on its own</text>',
+    );
 
   // Row 2 — the pieces, re-encoded.
   x = left;
@@ -121,11 +142,15 @@ String _svg(
   }
   row(186, boxes);
   b
-    ..writeln('<text class="cnt" x="${w - 40}" y="208" text-anchor="end" '
-        'fill="#cf222e">$after tokens</text>')
-    ..writeln('<text class="lbl" x="$left" y="262">'
-        'The count you measured on the whole string is not a budget for its '
-        'pieces.</text>')
+    ..writeln(
+      '<text class="cnt" x="${w - 40}" y="208" text-anchor="end" '
+      'fill="#cf222e">$after tokens</text>',
+    )
+    ..writeln(
+      '<text class="lbl" x="$left" y="262">'
+      'The count you measured on the whole string is not a budget for its '
+      'pieces.</text>',
+    )
     ..writeln('</svg>');
   return b.toString();
 }

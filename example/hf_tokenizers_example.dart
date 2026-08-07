@@ -40,7 +40,9 @@ void main() {
   for (var i = 0; i < tokens.length; i += budget) {
     final window = tokens.sublist(i, (i + budget).clamp(0, tokens.length));
     // The chunk's text runs from the first token's start to the last's end.
-    final chunk = utf8.decode(bytes.sublist(window.first.start, window.last.end));
+    final chunk = utf8.decode(
+      bytes.sublist(window.first.start, window.last.end),
+    );
     print('  [${window.length} tok] ${chunk.trim()}');
   }
 

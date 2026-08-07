@@ -181,15 +181,23 @@ final class Tokenizer implements Finalizable {
   /// back to the text (see [TokenOffset] for how to slice with those offsets).
   /// This is what token-accurate chunking, span highlighting and named-entity
   /// extraction need. [addSpecialTokens] behaves as in [encode].
-  List<TokenOffset> encodeWithOffsets(String text,
-      {bool addSpecialTokens = true}) {
+  List<TokenOffset> encodeWithOffsets(
+    String text, {
+    bool addSpecialTokens = true,
+  }) {
     _ensureOpen();
     final (input, inputLen) = _allocUtf8(text);
     final outLen = calloc<IntPtr>();
     final outIds = calloc<Pointer<Uint32>>();
     try {
       final offsetsPtr = tkEncodeOffsets(
-          _handle, input, inputLen, addSpecialTokens, outLen, outIds);
+        _handle,
+        input,
+        inputLen,
+        addSpecialTokens,
+        outLen,
+        outIds,
+      );
       if (offsetsPtr == nullptr) throw StateError('Failed to encode text');
       final count = outLen.value;
       final idsPtr = outIds.value;
@@ -278,7 +286,10 @@ final class Tokenizer implements Finalizable {
     // is given, so the whole set has to come off the budget up front. Counting
     // only the ones inside the first maxTokens would leave the trailing [SEP]
     // unaccounted for, and the result would re-encode one token over.
-    final spans = [for (final t in tokens) if (t.end > t.start) t];
+    final spans = [
+      for (final t in tokens)
+        if (t.end > t.start) t,
+    ];
     final specialCount = tokens.length - spans.length;
     final keep = maxTokens - specialCount;
     if (keep < 1) {
@@ -364,7 +375,10 @@ final class Tokenizer implements Finalizable {
     final tokens = encodeWithOffsets(text, addSpecialTokens: addSpecialTokens);
     // Special tokens sit outside the text, so drop them before slicing: they
     // consume budget but own no bytes to cut on.
-    final spans = [for (final t in tokens) if (t.end > t.start) t];
+    final spans = [
+      for (final t in tokens)
+        if (t.end > t.start) t,
+    ];
     if (spans.isEmpty) return const [];
 
     // Budget counts what the model counts, so the markers come off the top.
@@ -405,7 +419,9 @@ final class Tokenizer implements Finalizable {
       var end = start + perChunk < spans.length
           ? start + perChunk
           : spans.length;
-      final from = (overlapTokens > 0 && start > 0) ? spans[start].start : cursor;
+      final from = (overlapTokens > 0 && start > 0)
+          ? spans[start].start
+          : cursor;
 
       // Counting the spans is not enough: tokenization depends on context, so
       // a piece can cost more tokens on its own than it did inside the whole

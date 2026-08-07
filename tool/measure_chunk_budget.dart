@@ -23,11 +23,14 @@ const _fixture = 'test/fixtures/bert-base-uncased.json';
 /// the ones that matter: long words get cut mid-subword, which is where the
 /// count of the whole string stops bounding the count of its pieces.
 const _corpus = <String, String>{
-  'compounds': 'tokenization internationalization '
+  'compounds':
+      'tokenization internationalization '
       'antidisestablishmentarianism counterrevolutionaries',
-  'mixed-case': 'The quick brown fox jumps over the lazy dog near the river '
+  'mixed-case':
+      'The quick brown fox jumps over the lazy dog near the river '
       'bank today, uncharacteristically.',
-  'unicode': 'çğışöü 雪 🎿 emoji and accents mixed with ASCII words here, '
+  'unicode':
+      'çğışöü 雪 🎿 emoji and accents mixed with ASCII words here, '
       'internationalisation included',
   'letters': 'a b c d e f g h i j k l m n o p q r s t u v w x y z',
   'repeated': 'xylophone xylophone xylophone xylophone xylophone xylophone',
@@ -75,8 +78,10 @@ void main() {
   tk.close();
 
   stdout
-    ..writeln('corpus: ${_corpus.length} documents, '
-        'budgets ${_budgets.from}-${_budgets.to}, both special-token modes')
+    ..writeln(
+      'corpus: ${_corpus.length} documents, '
+      'budgets ${_budgets.from}-${_budgets.to}, both special-token modes',
+    )
     ..writeln('pieces checked : $checked')
     ..writeln('over budget    : $over')
     ..writeln('  of those, single-source-token (unsplittable): $irreducible')
@@ -84,10 +89,14 @@ void main() {
 
   final reducible = over - irreducible;
   if (reducible > 0) {
-    stdout.writeln('\nFAIL: $reducible piece(s) over budget that could have '
-        'been split smaller.');
+    stdout.writeln(
+      '\nFAIL: $reducible piece(s) over budget that could have '
+      'been split smaller.',
+    );
     exit(1);
   }
-  stdout.writeln('\nOK: every over-budget piece is a single source token, '
-      'which cannot be split further.');
+  stdout.writeln(
+    '\nOK: every over-budget piece is a single source token, '
+    'which cannot be split further.',
+  );
 }

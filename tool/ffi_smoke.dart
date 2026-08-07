@@ -8,14 +8,24 @@ import 'package:ffi/ffi.dart';
 
 typedef _FromBytesC = Pointer<Void> Function(Pointer<Uint8>, IntPtr);
 typedef _FromBytes = Pointer<Void> Function(Pointer<Uint8>, int);
-typedef _EncodeC = Pointer<Uint32> Function(
-    Pointer<Void>, Pointer<Utf8>, Bool, Pointer<IntPtr>);
-typedef _Encode = Pointer<Uint32> Function(
-    Pointer<Void>, Pointer<Utf8>, bool, Pointer<IntPtr>);
-typedef _DecodeC = Pointer<Utf8> Function(
-    Pointer<Void>, Pointer<Uint32>, IntPtr, Bool);
-typedef _Decode = Pointer<Utf8> Function(
-    Pointer<Void>, Pointer<Uint32>, int, bool);
+typedef _EncodeC =
+    Pointer<Uint32> Function(
+      Pointer<Void>,
+      Pointer<Utf8>,
+      Bool,
+      Pointer<IntPtr>,
+    );
+typedef _Encode =
+    Pointer<Uint32> Function(
+      Pointer<Void>,
+      Pointer<Utf8>,
+      bool,
+      Pointer<IntPtr>,
+    );
+typedef _DecodeC =
+    Pointer<Utf8> Function(Pointer<Void>, Pointer<Uint32>, IntPtr, Bool);
+typedef _Decode =
+    Pointer<Utf8> Function(Pointer<Void>, Pointer<Uint32>, int, bool);
 typedef _FreeIdsC = Void Function(Pointer<Uint32>, IntPtr);
 typedef _FreeIds = void Function(Pointer<Uint32>, int);
 typedef _FreeStrC = Void Function(Pointer<Utf8>);
@@ -27,8 +37,11 @@ typedef _Vocab = int Function(Pointer<Void>);
 
 void main() {
   final lib = DynamicLibrary.open(
-      'native/tokenizers_ffi/target/release/libtokenizers_ffi.dylib');
-  final fromBytes = lib.lookupFunction<_FromBytesC, _FromBytes>('tk_from_bytes');
+    'native/tokenizers_ffi/target/release/libtokenizers_ffi.dylib',
+  );
+  final fromBytes = lib.lookupFunction<_FromBytesC, _FromBytes>(
+    'tk_from_bytes',
+  );
   final encode = lib.lookupFunction<_EncodeC, _Encode>('tk_encode');
   final decode = lib.lookupFunction<_DecodeC, _Decode>('tk_decode');
   final freeIds = lib.lookupFunction<_FreeIdsC, _FreeIds>('tk_free_ids');
@@ -58,11 +71,14 @@ void main() {
   stdout.writeln('decode -> "${decoded.toDartString()}"');
 
   const expected = [101, 7592, 2088, 102]; // [CLS] hello world [SEP]
-  final ok = ids.length == expected.length &&
+  final ok =
+      ids.length == expected.length &&
       List.generate(n, (i) => ids[i] == expected[i]).every((b) => b);
-  stdout.writeln(ok
-      ? 'PASS: token ids are byte-exact vs HuggingFace'
-      : 'MISMATCH: expected $expected');
+  stdout.writeln(
+    ok
+        ? 'PASS: token ids are byte-exact vs HuggingFace'
+        : 'MISMATCH: expected $expected',
+  );
 
   freeStr(decoded);
   freeIds(idsPtr, n);

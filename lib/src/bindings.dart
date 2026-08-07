@@ -9,38 +9,67 @@ import 'package:ffi/ffi.dart';
 external Pointer<Void> tkFromBytes(Pointer<Uint8> data, int len);
 
 @Native<
-    Pointer<Uint32> Function(Pointer<Void>, Pointer<Uint8>, IntPtr, Bool,
-        Pointer<IntPtr>)>(symbol: 'tk_encode')
-external Pointer<Uint32> tkEncode(Pointer<Void> tk, Pointer<Uint8> text,
-    int textLen, bool addSpecialTokens, Pointer<IntPtr> outLen);
+  Pointer<Uint32> Function(
+    Pointer<Void>,
+    Pointer<Uint8>,
+    IntPtr,
+    Bool,
+    Pointer<IntPtr>,
+  )
+>(symbol: 'tk_encode')
+external Pointer<Uint32> tkEncode(
+  Pointer<Void> tk,
+  Pointer<Uint8> text,
+  int textLen,
+  bool addSpecialTokens,
+  Pointer<IntPtr> outLen,
+);
 
 /// Encodes and returns the offsets array (`2 * outLen` `u32`s); writes the ids
 /// array pointer to [outIds] and the token count to [outLen]. [text] is passed
 /// as [textLen] UTF-8 bytes. Both arrays are freed with [tkFreeIds] (offsets
 /// length is `2 * outLen`).
 @Native<
-    Pointer<Uint32> Function(Pointer<Void>, Pointer<Uint8>, IntPtr, Bool,
-        Pointer<IntPtr>, Pointer<Pointer<Uint32>>)>(symbol: 'tk_encode_offsets')
+  Pointer<Uint32> Function(
+    Pointer<Void>,
+    Pointer<Uint8>,
+    IntPtr,
+    Bool,
+    Pointer<IntPtr>,
+    Pointer<Pointer<Uint32>>,
+  )
+>(symbol: 'tk_encode_offsets')
 external Pointer<Uint32> tkEncodeOffsets(
-    Pointer<Void> tk,
-    Pointer<Uint8> text,
-    int textLen,
-    bool addSpecialTokens,
-    Pointer<IntPtr> outLen,
-    Pointer<Pointer<Uint32>> outIds);
+  Pointer<Void> tk,
+  Pointer<Uint8> text,
+  int textLen,
+  bool addSpecialTokens,
+  Pointer<IntPtr> outLen,
+  Pointer<Pointer<Uint32>> outIds,
+);
 
 @Native<Pointer<Utf8> Function(Pointer<Void>, Pointer<Uint32>, IntPtr, Bool)>(
-    symbol: 'tk_decode')
+  symbol: 'tk_decode',
+)
 external Pointer<Utf8> tkDecode(
-    Pointer<Void> tk, Pointer<Uint32> ids, int len, bool skipSpecialTokens);
+  Pointer<Void> tk,
+  Pointer<Uint32> ids,
+  int len,
+  bool skipSpecialTokens,
+);
 
 @Native<IntPtr Function(Pointer<Void>)>(symbol: 'tk_vocab_size')
 external int tkVocabSize(Pointer<Void> tk);
 
 @Native<Bool Function(Pointer<Void>, Pointer<Uint8>, IntPtr, Pointer<Uint32>)>(
-    symbol: 'tk_token_to_id')
-external bool tkTokenToId(Pointer<Void> tk, Pointer<Uint8> token, int tokenLen,
-    Pointer<Uint32> outId);
+  symbol: 'tk_token_to_id',
+)
+external bool tkTokenToId(
+  Pointer<Void> tk,
+  Pointer<Uint8> token,
+  int tokenLen,
+  Pointer<Uint32> outId,
+);
 
 @Native<Pointer<Utf8> Function(Pointer<Void>, Uint32)>(symbol: 'tk_id_to_token')
 external Pointer<Utf8> tkIdToToken(Pointer<Void> tk, int id);

@@ -91,10 +91,10 @@ void main(List<String> args) async {
 }
 
 String _localLibraryName(OS os) => switch (os) {
-      OS.macOS => 'libtokenizers_ffi.dylib',
-      OS.windows => 'tokenizers_ffi.dll',
-      _ => 'libtokenizers_ffi.so',
-    };
+  OS.macOS => 'libtokenizers_ffi.dylib',
+  OS.windows => 'tokenizers_ffi.dll',
+  _ => 'libtokenizers_ffi.so',
+};
 
 /// The release asset name for a target, or null if no prebuilt is published.
 String? _prebuiltAssetName(OS os, Architecture arch) {
@@ -161,21 +161,25 @@ Future<Uri> _cargoBuild(
     // cargo is not on PATH: Process.run throws rather than returning a
     // non-zero exit, so without this the hook crashes with a raw
     // ProcessException instead of telling the user what to install.
-    throw Exception(_sourceBuildMessage(
-      os,
-      arch,
-      'no Rust toolchain was found (${error.message})',
-      downloadFailed: downloadFailed,
-    ));
+    throw Exception(
+      _sourceBuildMessage(
+        os,
+        arch,
+        'no Rust toolchain was found (${error.message})',
+        downloadFailed: downloadFailed,
+      ),
+    );
   }
   if (result.exitCode != 0) {
-    throw Exception(_sourceBuildMessage(
-      os,
-      arch,
-      'the source build failed (exit ${result.exitCode})\n'
-          '${result.stdout}\n${result.stderr}',
-      downloadFailed: downloadFailed,
-    ));
+    throw Exception(
+      _sourceBuildMessage(
+        os,
+        arch,
+        'the source build failed (exit ${result.exitCode})\n'
+        '${result.stdout}\n${result.stderr}',
+        downloadFailed: downloadFailed,
+      ),
+    );
   }
   return crateDir.resolve('target/release/$localName');
 }
@@ -191,10 +195,10 @@ String _sourceBuildMessage(
 }) {
   final lead = downloadFailed
       ? 'The prebuilt binary for $os $arch could not be downloaded '
-          '(offline, proxied, or rate-limited?), and the source-build '
-          'fallback then failed'
+            '(offline, proxied, or rate-limited?), and the source-build '
+            'fallback then failed'
       : 'No prebuilt binary is published for $os $arch, and the source-build '
-          'fallback failed';
+            'fallback failed';
   return '$lead: $detail\n'
       'Install a Rust toolchain from https://rustup.rs, or build on a target '
       'with a published prebuilt (macOS arm64/x64, Linux x64, Windows x64).';

@@ -133,9 +133,22 @@ and a host that matches the target.
 | Linux arm64                   | source build            | yes (Rust)        |
 | **Android, iOS**              | **not supported yet**   | —                 |
 
-The prebuilt Linux binary is linked against glibc 2.34 or newer. On an older
-distribution the loader refuses it — on Debian 11, which ships glibc 2.31,
-`ldd` reports `version 'GLIBC_2.34' not found`. Check yours with
+The prebuilt Linux binary needs glibc 2.34 or newer. That is measured, not
+assumed: the released `.so` references no glibc symbol above `GLIBC_2.34`, and
+links nothing beyond `libc.so.6` and `libgcc_s.so.1`. What it means for the
+distributions people actually deploy on:
+
+| Distribution | glibc | Prebuilt |
+| ------------ | ----- | -------- |
+| Ubuntu 24.04 | 2.39  | loads    |
+| Debian 12    | 2.36  | loads    |
+| Ubuntu 22.04 | 2.35  | loads    |
+| Debian 11    | 2.31  | fails    |
+| Alpine       | musl  | fails    |
+
+On Debian 11 the loader reports `version 'GLIBC_2.34' not found`. Alpine fails
+for a different reason: it ships musl and has no `libc.so.6`, so the load stops
+at the missing library rather than at a version. Check yours with
 `ldd --version`.
 
 The source build does not rescue this. The hook falls back to `cargo` only when

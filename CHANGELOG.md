@@ -1,3 +1,19 @@
+## 1.0.1
+
+- **Document the glibc floor on the prebuilt Linux binary.** The platform table
+  read "Linux x64 — prebuilt, no toolchain needed" with nothing qualifying it,
+  and on an older distribution that is wrong. The released `.so` references
+  `GLIBC_2.34`, so on Debian 11, which ships 2.31, the loader refuses it with
+  `version 'GLIBC_2.34' not found`. Installing Rust does not route around it:
+  the `cargo` fallback runs only when the prebuilt cannot be *downloaded*, and
+  a download that succeeds is used as it is, so the failure lands at load
+  rather than at build. The README now gives the floor, quotes what the loader
+  says, and lists which distributions clear it — Ubuntu 22.04 and newer and
+  Debian 12 do, Debian 11 does not, and Alpine fails earlier still because musl
+  provides no `libc.so.6`. Docs only; the binary is unchanged.
+- `lints` moves from 5 to 6 in the dev dependencies. Nothing new fired, so no
+  source changed.
+
 ## 1.0.0
 
 First stable release. The API below is what 1.0 freezes.

@@ -103,6 +103,24 @@ encode to two tokens. Cuts land on token boundaries, which are UTF-8
 boundaries, so no character is split; with no overlap the pieces concatenate
 back to the original text, whitespace included.
 
+### Feeding a retrieval pipeline
+
+`chunkByTokens` returns strings. A retrieval pipeline usually also wants to
+know *where* each chunk came from, so it can highlight the passage it cited.
+`example/rag_chunking.dart` builds that: a `Chunker` for
+[`rag_kit`](https://pub.dev/packages/rag_kit) on top of `encodeWithOffsets`,
+carrying both the exact token count and a real range in the source.
+
+The interesting part is the conversion. `TokenOffset` is in UTF-8 bytes and
+`rag_kit`'s `Chunk` promises `source.substring(start, end) == text`, which is
+UTF-16 — the two agree on ASCII and diverge the moment the text is not. The
+example maps between them and then *asserts* the contract, because that is the
+mistake worth catching once rather than in production.
+
+Run it to see why a character budget cannot be tuned: on one mixed
+English-and-Japanese paragraph, the chunks came out between **2.2 and 4.8
+characters per token**.
+
 ## What it supports
 
 Whatever the `tokenizer.json` declares. Because it is the real Rust library, the

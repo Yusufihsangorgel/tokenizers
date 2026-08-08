@@ -1,3 +1,22 @@
+## 1.0.2
+
+- **Add `example/rag_chunking.dart`: a token-counting `Chunker` for rag_kit.**
+  `chunkByTokens` hands back strings, which is enough to respect a model's
+  limit but not enough to say where a chunk came from — a retrieval pipeline
+  that cites a passage needs the range. This builds one on `encodeWithOffsets`
+  and carries both the token count and a real span.
+  - The part worth reading is the conversion. `TokenOffset` is in **UTF-8
+    bytes** and rag_kit's `Chunk` promises `source.substring(start, end) ==
+    text`, which is UTF-16. On ASCII they agree and the bug hides; one Japanese
+    sentence and the byte offset runs past the end of the Dart string. The
+    example maps between them and then asserts the contract on every chunk.
+  - It also measures the thing that makes token counting worth the trouble: on
+    one mixed English-and-Japanese paragraph with a 24-token budget, the chunks
+    ranged from 2.2 to 4.8 characters per token. A single character budget
+    cannot be correct across that.
+  - `rag_kit` is a dev dependency for this file only. It is pure Dart with no
+    runtime dependencies, so consumers of this package are unaffected.
+
 ## 1.0.1
 
 - **Document the glibc floor on the prebuilt Linux binary.** The platform table

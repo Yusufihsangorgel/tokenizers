@@ -7,6 +7,12 @@ on:
   release:
     types: [published]
 
+  # Weekly, so SDK, dependency and runner-image drift shows up on its
+  # own rather than waiting for the next push.
+  schedule:
+    - cron: '20 5 * * 1'
+  workflow_dispatch:
+
 permissions:
   contents: write
 

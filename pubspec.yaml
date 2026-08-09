@@ -11,10 +11,13 @@ topics:
   - ffi
   - nlp
 
+# Kept on one double-quoted line each. A folded `>-` block turns an
+# over-indented continuation into a literal newline, which is how the previous
+# caption shipped a `\n` to pub.dev.
 screenshots:
-  - description: >-
-      The example running: a BERT tokenizer reporting its 30522-token vocabulary
-       and round-tripping "hello world" through encode and decode.
+  - description: "One sentence tokenized twice: the ids hf_tokenizers returns, and the three words a lowercase-and-look-up shortcut loses to the unknown token."
+    path: doc/parity.png
+  - description: "The example running: a BERT vocabulary of 30522, a byte-exact encode and decode round trip, then a 38-token document cut into 12-token chunks."
     path: doc/demo.gif
 
 platforms:

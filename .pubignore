@@ -1,1 +1,15 @@
+# A .pubignore shadows .gitignore for publishing, so everything .gitignore keeps
+# out of the archive has to be repeated here.
+.dart_tool/
+build/
+.DS_Store
+pubspec.lock
 native/tokenizers_ffi/target/
+
+# pub.dev fetches README artwork from GitHub raw rather than from the archive,
+# so the only images worth shipping are the two paths `screenshots:` names,
+# which pub.dev does read out of the archive. Everything else in doc/ stays in
+# the repository and out of the download.
+doc/*
+!doc/parity.png
+!doc/demo.gif

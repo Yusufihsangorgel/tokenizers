@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900" font-family="ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+<style>.m{font-family:ui-monospace,SFMono-Regular,Menlo,DejaVu Sans Mono,monospace}.cap{font-size:13.5px;font-weight:700;letter-spacing:.09em}.sub{font-size:16px;fill:#57606a}.tok{font-size:23.0px}.id{font-size:20.0px;font-weight:700}.note{font-size:17.5px;fill:#24292f}.tiny{font-size:12.5px;fill:#8c959f}</style>
+<rect x="1" y="1" width="898.0" height="898.0" rx="18" fill="#ffffff" stroke="#d0d7de"/>
+<text class="cap" x="56.0" y="52.0" fill="#57606a">INPUT</text>
+<text class="m" x="56.0" y="96" font-size="27.0px" fill="#0d1117">T</text>
+<text class="m" x="72.2" y="96" font-size="27.0px" fill="#0d1117">h</text>
+<text class="m" x="88.4" y="96" font-size="27.0px" fill="#0d1117">e</text>
+<text class="m" x="104.60000000000001" y="96" font-size="27.0px" fill="#0d1117"> </text>
+<text class="m" x="120.80000000000001" y="96" font-size="27.0px" fill="#0d1117">n</text>
+<text class="m" x="137.0" y="96" font-size="27.0px" fill="#0d1117">a</text>
+<text class="m" x="153.2" y="96" font-size="27.0px" fill="#cf222e" font-weight="700">ï</text>
+<text class="m" x="169.39999999999998" y="96" font-size="27.0px" fill="#0d1117">v</text>
+<text class="m" x="185.59999999999997" y="96" font-size="27.0px" fill="#0d1117">e</text>
+<text class="m" x="201.79999999999995" y="96" font-size="27.0px" fill="#0d1117"> </text>
+<text class="m" x="217.99999999999994" y="96" font-size="27.0px" fill="#0d1117">c</text>
+<text class="m" x="234.19999999999993" y="96" font-size="27.0px" fill="#0d1117">a</text>
+<text class="m" x="250.39999999999992" y="96" font-size="27.0px" fill="#0d1117">f</text>
+<text class="m" x="266.5999999999999" y="96" font-size="27.0px" fill="#cf222e" font-weight="700">é</text>
+<text class="m" x="282.7999999999999" y="96" font-size="27.0px" fill="#0d1117"> </text>
+<text class="m" x="298.9999999999999" y="96" font-size="27.0px" fill="#0d1117">i</text>
+<text class="m" x="315.1999999999999" y="96" font-size="27.0px" fill="#0d1117">n</text>
+<text class="m" x="331.39999999999986" y="96" font-size="27.0px" fill="#0d1117"> </text>
+<text class="m" x="347.59999999999985" y="96" font-size="27.0px" fill="#0d1117">S</text>
+<text class="m" x="363.79999999999984" y="96" font-size="27.0px" fill="#cf222e" font-weight="700">ã</text>
+<text class="m" x="379.99999999999983" y="96" font-size="27.0px" fill="#0d1117">o</text>
+<text class="m" x="396.1999999999998" y="96" font-size="27.0px" fill="#0d1117"> </text>
+<text class="m" x="412.3999999999998" y="96" font-size="27.0px" fill="#0d1117">P</text>
+<text class="m" x="428.5999999999998" y="96" font-size="27.0px" fill="#0d1117">a</text>
+<text class="m" x="444.7999999999998" y="96" font-size="27.0px" fill="#0d1117">u</text>
+<text class="m" x="460.9999999999998" y="96" font-size="27.0px" fill="#0d1117">l</text>
+<text class="m" x="477.19999999999976" y="96" font-size="27.0px" fill="#0d1117">o</text>
+<text class="tiny" x="844.0" y="96" text-anchor="end">three accented characters</text>
+<line x1="56.0" y1="130.0" x2="844.0" y2="130.0" stroke="#d0d7de"/>
+<text class="cap" x="56.0" y="178.0" fill="#1a7f37">HF_TOKENIZERS</text>
+<text class="sub" x="208.0" y="178.0">encode(text, addSpecialTokens: false)</text>
+<rect x="56.0" y="198.0" width="66.24" height="52.0" rx="7" fill="#ddf4ff" stroke="#54aeff"/>
+<text class="m tok" x="89.12" y="232.0" text-anchor="middle" fill="#0d1117">the</text>
+<text class="m id" x="89.12" y="282.0" text-anchor="middle" fill="#0d1117">1996</text>
+<rect x="133.24" y="198.0" width="93.84" height="52.0" rx="7" fill="#ddf4ff" stroke="#54aeff"/>
+<text class="m tok" x="180.16000000000003" y="232.0" text-anchor="middle" fill="#0d1117">naive</text>
+<text class="m id" x="180.16000000000003" y="282.0" text-anchor="middle" fill="#0d1117">15743</text>
+<rect x="238.08" y="198.0" width="80.03999999999999" height="52.0" rx="7" fill="#ddf4ff" stroke="#54aeff"/>
+<text class="m tok" x="278.1" y="232.0" text-anchor="middle" fill="#0d1117">cafe</text>
+<text class="m id" x="278.1" y="282.0" text-anchor="middle" fill="#0d1117">7668</text>
+<rect x="329.12" y="198.0" width="52.44" height="52.0" rx="7" fill="#ddf4ff" stroke="#54aeff"/>
+<text class="m tok" x="355.34000000000003" y="232.0" text-anchor="middle" fill="#0d1117">in</text>
+<text class="m id" x="355.34000000000003" y="282.0" text-anchor="middle" fill="#0d1117">1999</text>
+<rect x="392.56" y="198.0" width="66.24" height="52.0" rx="7" fill="#ddf4ff" stroke="#54aeff"/>
+<text class="m tok" x="425.68" y="232.0" text-anchor="middle" fill="#0d1117">sao</text>
+<text class="m id" x="425.68" y="282.0" text-anchor="middle" fill="#0d1117">7509</text>
+<rect x="469.8" y="198.0" width="93.84" height="52.0" rx="7" fill="#ddf4ff" stroke="#54aeff"/>
+<text class="m tok" x="516.72" y="232.0" text-anchor="middle" fill="#0d1117">paulo</text>
+<text class="m id" x="516.72" y="282.0" text-anchor="middle" fill="#0d1117">9094</text>
+<text class="note" x="56.0" y="324.0" fill="#24292f"><tspan fill="#1a7f37" font-weight="700">✓</tspan>  every id above is the value <tspan class="m" font-size="16px">tokenizer.json</tspan> assigns to that token</text>
+<line x1="56.0" y1="362.0" x2="844.0" y2="362.0" stroke="#d0d7de"/>
+<text class="cap" x="56.0" y="408.0" fill="#cf222e">LOWERCASE, THEN LOOK THE WORD UP</text>
+<text class="sub" x="386.0" y="408.0">same vocabulary, no normalizer</text>
+<rect x="56.0" y="428.0" width="66.24" height="52.0" rx="7" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m tok" x="89.12" y="462.0" text-anchor="middle" fill="#0d1117">the</text>
+<text class="m id" x="89.12" y="512.0" text-anchor="middle" fill="#57606a">1996</text>
+<rect x="133.24" y="428.0" width="93.84" height="52.0" rx="7" fill="#ffebe9" stroke="#cf222e"/>
+<text class="m tok" x="180.16000000000003" y="462.0" text-anchor="middle" fill="#cf222e">naïve</text>
+<text class="m id" x="180.16000000000003" y="512.0" text-anchor="middle" fill="#cf222e">[UNK]</text>
+<text class="m" x="180.16000000000003" y="536.0" text-anchor="middle" font-size="15px" fill="#cf222e">100</text>
+<rect x="238.08" y="428.0" width="80.03999999999999" height="52.0" rx="7" fill="#ffebe9" stroke="#cf222e"/>
+<text class="m tok" x="278.1" y="462.0" text-anchor="middle" fill="#cf222e">café</text>
+<text class="m id" x="278.1" y="512.0" text-anchor="middle" fill="#cf222e">[UNK]</text>
+<text class="m" x="278.1" y="536.0" text-anchor="middle" font-size="15px" fill="#cf222e">100</text>
+<rect x="329.12" y="428.0" width="52.44" height="52.0" rx="7" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m tok" x="355.34000000000003" y="462.0" text-anchor="middle" fill="#0d1117">in</text>
+<text class="m id" x="355.34000000000003" y="512.0" text-anchor="middle" fill="#57606a">1999</text>
+<rect x="392.56" y="428.0" width="66.24" height="52.0" rx="7" fill="#ffebe9" stroke="#cf222e"/>
+<text class="m tok" x="425.68" y="462.0" text-anchor="middle" fill="#cf222e">são</text>
+<text class="m id" x="425.68" y="512.0" text-anchor="middle" fill="#cf222e">[UNK]</text>
+<text class="m" x="425.68" y="536.0" text-anchor="middle" font-size="15px" fill="#cf222e">100</text>
+<rect x="469.8" y="428.0" width="93.84" height="52.0" rx="7" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m tok" x="516.72" y="462.0" text-anchor="middle" fill="#0d1117">paulo</text>
+<text class="m id" x="516.72" y="512.0" text-anchor="middle" fill="#57606a">9094</text>
+<line x1="56.0" y1="580.0" x2="844.0" y2="580.0" stroke="#d0d7de"/>
+<rect x="56.0" y="612.0" width="788.0" height="112.0" rx="10" fill="#fff8f7" stroke="#ffcecb"/>
+<rect x="82.0" y="638.0" width="79.0" height="40.0" rx="6" fill="#ffffff" stroke="#cf222e"/>
+<text class="m" x="121.5" y="665.0" text-anchor="middle" font-size="19.0px" fill="#cf222e">naïve</text>
+<rect x="175.0" y="638.0" width="67.6" height="40.0" rx="6" fill="#ffffff" stroke="#cf222e"/>
+<text class="m" x="208.8" y="665.0" text-anchor="middle" font-size="19.0px" fill="#cf222e">café</text>
+<rect x="256.6" y="638.0" width="56.199999999999996" height="40.0" rx="6" fill="#ffffff" stroke="#cf222e"/>
+<text class="m" x="284.70000000000005" y="665.0" text-anchor="middle" font-size="19.0px" fill="#cf222e">são</text>
+<path d="M 121.5 678.0 V 692.0 H 370.8" fill="none" stroke="#cf222e" stroke-width="1.4" opacity=".55"/>
+<path d="M 208.8 678.0 V 692.0 H 370.8" fill="none" stroke="#cf222e" stroke-width="1.4" opacity=".55"/>
+<path d="M 284.70000000000005 678.0 V 692.0 H 370.8" fill="none" stroke="#cf222e" stroke-width="1.4" opacity=".55"/>
+<path d="M 370.8 692.0 V 650.0" fill="none" stroke="#cf222e" stroke-width="1.4" opacity=".55"/>
+<text class="m" x="382.8" y="666.0" font-size="27px" font-weight="700" fill="#cf222e">100</text>
+<text class="sub" x="382.8" y="690.0">3 different words, one id</text>
+<text class="note" x="56.0" y="768.0" fill="#24292f">The normalizer this file declares lowercases <tspan font-weight="700">and strips accents</tspan> before any lookup.</text>
+<text class="note" x="56.0" y="795.0" fill="#24292f">Skip that step and 3 of 6 words are gone. The 3 that survived are the trap:</text>
+<text class="note" x="56.0" y="822.0" fill="#24292f">a shortcut is right on the ASCII you test with and wrong on what users send.</text>
+<text class="tiny m" x="56.0" y="862.0">tool/parity_shot.dart · test/fixtures/bert-base-uncased.json · 30522 tokens</text>
+</svg>

@@ -1,3 +1,12 @@
+## 1.0.5
+
+- The offsets section has a picture of the trap it describes.
+  `tool/offsets_figure.dart` reads the six token spans of one sentence twice,
+  through `utf8.decode` and through `String.substring`. One row agrees, four
+  return the wrong text, and the sixth throws `RangeError`. Only one of the five
+  wrong reads is loud about it, which is the reason the section exists. Docs and
+  tooling only.
+
 ## 1.0.4
 
 - `example/parity.dart` runs the parity the headline claims. The page says the

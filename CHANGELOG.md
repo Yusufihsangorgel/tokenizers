@@ -1,3 +1,36 @@
+## 1.0.3
+
+- The package page now opens on evidence rather than a banner. One sentence is
+  tokenized twice out of one `tokenizer.json`: this package on the top row, and
+  on the bottom the shortcut that looks correct, lowercase plus a straight
+  vocabulary lookup. The normalizer in that file strips accents before any
+  lookup happens, and skipping it sends 3 of the 6 words to `[UNK]`.
+  `tool/parity_shot.dart` draws the picture from the test fixture at run time
+  and re-checks every id on the top row against the vocabulary table it parses
+  out of the JSON itself. If the library and the file ever disagreed, the tool
+  would fail instead of drawing.
+- A new README section, "When to use something else", names the places this
+  package does not go (phones, the web, Alpine, glibc older than 2.34) and says
+  what to reach for there. The boundary is measured too:
+  [`dart_sentencepiece_tokenizer`](https://pub.dev/packages/dart_sentencepiece_tokenizer)
+  1.3.2 handles BPE and Unigram, and on `bert-base-uncased/tokenizer.json` it
+  stops with `FormatException: Missing model type`. BERT leaves `model.type`
+  out of that file, and the loader has no WordPiece branch to fall back on.
+- The README now shows the command that runs the example, and the recording was
+  re-taken to cover the full run: a 30522-token vocabulary, a round trip
+  through encode and decode, then a 38-token document cut into 12-token chunks.
+  `example/README.md` gained the companion piece: why `chunkByTokens`
+  re-encodes every chunk instead of trusting the count it already has.
+- The published archive now carries only the two images the `screenshots:`
+  field names. The README loads its artwork from GitHub, and the other six
+  files under `doc/` were dead weight in every download. The 1.0.2 archive was
+  508 KB; this one is 334 KB.
+- Both images now sit in the `screenshots:` field, the parity picture first.
+  The demo caption that 1.0.2 shipped carried a literal line break inside the
+  string, a leftover from a folded YAML block; both captions are single-line
+  strings now.
+- Docs and packaging only; nothing under `lib/` changed.
+
 ## 1.0.2
 
 - **Add `example/rag_chunking.dart`: a token-counting `Chunker` for rag_kit.**

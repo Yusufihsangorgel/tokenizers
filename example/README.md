@@ -1,9 +1,59 @@
 # Examples
 
-Three programs, all running against the `bert-base-uncased` fixture committed in
-this repository. They work from a checkout with nothing to download. Point them
-at the `tokenizer.json` that ships with the model you actually call and the
-numbers become yours.
+Four programs, all running against the `bert-base-uncased` fixture committed in
+this repository. They work from a checkout with nothing to download. Point
+`context_budget.dart` or `rag_chunking.dart` at the `tokenizer.json` that ships
+with the model you actually call and the numbers become yours. `parity.dart`
+stays on the fixture, because the reference ids it checks against belong to it.
+
+## The ids are the reference implementation's ids
+
+```
+dart run example/parity.dart
+```
+
+This package binds HuggingFace's Rust `tokenizers` crate instead of
+reimplementing it. `parity.dart` is what that buys, in a form you can run: one
+sentence down two paths that read the same `tokenizer.json`, this package on the
+top row, and on the bottom row the shortest thing that looks correct, which
+lowercases each word and looks it up in the vocabulary table.
+
+```
+input               The naïve café in São Paulo
+
+hf_tokenizers       the   naive  cafe   in    sao    paulo
+  id                1996  15743  7668   1999  7509   9094
+
+lowercase, look up  the   naïve  café   in    são    paulo
+  id                1996  [UNK]  [UNK]  1999  [UNK]  9094
+
+encode(text, addSpecialTokens: false) == the reference ids: yes
+3 of 6 words never reached the vocabulary: naïve, café, São.
+Each came back as 100, the id this file gives [UNK].
+3 words, one id, and nothing downstream can separate them again.
+The 3 that agreed are the ASCII ones, which is how a shortcut
+passes its tests and still breaks on the first accented name a user types.
+
+Both rows read test/fixtures/bert-base-uncased.json.
+Its normalizer is "BertNormalizer", lowercase=true, strip_accents=null.
+The accents came off regardless. Reproducing that takes the crate, or a
+faithful copy of its rules.
+```
+
+**The misses collapse onto one id.** `naïve`, `café` and `São` do not come back
+wrong in three separate ways. They come back as the same number, and an index
+built on that has nothing left to tell them apart with. Half the sentence
+survived, which is the shape of the bug: a shortcut is right on the ASCII a test
+suite is written in.
+
+The bottom row also explains itself. This `tokenizer.json` never asks for
+accents to be stripped: `strip_accents` sits unset and they come off regardless.
+A reimplementation has to know that rule rather than read it, and the same file
+declares a normalizer, a pre-tokenizer, a post-processor and a decoder, each
+carrying rules of its own.
+
+The top row is compared against the ids written into the example rather than
+against itself. If the native library ever drifted, that line would print `no`.
 
 ## Spending a context budget
 

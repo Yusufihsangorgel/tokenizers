@@ -33,6 +33,9 @@ repository, and it re-checks every id on the top row against the vocabulary
 table parsed straight out of the JSON, so the numbers are measured rather than
 typed in.
 
+`dart run example/parity.dart` prints those two rows in a terminal and checks
+the top one against the ids above.
+
 ## Use it
 
 ```dart

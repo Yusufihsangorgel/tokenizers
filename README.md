@@ -9,6 +9,42 @@ nothing downstream complains.
 encodes to four ids and decodes back, and a 38-token document is split into
 12-token chunks on token boundaries rather than characters](https://raw.githubusercontent.com/Yusufihsangorgel/hf_tokenizers/main/doc/demo.gif)
 
+![Terminal output of the example: a vocabulary of 30522, hello world encoded to four ids and decoded back, then a 38-token document cut into 12-token chunks.](https://raw.githubusercontent.com/Yusufihsangorgel/tokenizers/main/doc/demo.gif)
+
+## Why this instead of what you already have
+
+**Instead of lowercasing and looking words up.** `example/parity.dart` runs
+both approaches against the real `test/fixtures/bert-base-uncased.json`.
+Encoding "The naïve café in São Paulo", this package reproduces the file's
+reference ids exactly. The shortcut turns `naïve`, `café`, and `São` all into
+id 100, the vocabulary's `[UNK]`, so three of six words collapse into one
+token that nothing downstream can separate again. The reason is in the file:
+its normalizer is `BertNormalizer` with `lowercase=true`, and it strips
+accents too. The three words that survived were the ASCII ones, which is how
+this shortcut passes a test suite and still breaks on the first accented name
+a user types.
+
+**Instead of `dart_sentencepiece_tokenizer`.** It carries a "🤗 Hugging Face
+Compatible" badge and offers to load a HuggingFace `tokenizer.json`
+(README lines 6 and 20), but its offsets are a different unit. It accumulates
+`piece.length`, which is Dart's UTF-16 code-unit count, into
+`offset: (charPos, charPos + pieceLen)`
+(`lib/src/sentencepiece/sentencepiece_tokenizer.dart:273-286`), and its own
+README calls them "Character offsets" (line 65). This package reports UTF-8
+byte offsets, matching what the Rust crate returns (`TokenOffset`,
+`lib/hf_tokenizers.dart:55`). On any text with multi-byte characters the two
+disagree, so a span from one cannot be used to slice for the other.
+
+**Reach for it when**
+
+- You count tokens against a real vocabulary for context budgeting or cost.
+- You chunk documents for RAG and the boundaries must land on token boundaries.
+- You highlight or extract spans and need offsets that index the original bytes.
+
+**Skip it** if an approximate count over ASCII English is all you need: a
+characters-over-four estimate costs nothing, while this package wants a
+`tokenizer.json` and a native build on Linux, macOS, or Windows.
+
 This package reimplements nothing. It binds the Rust `tokenizers` crate that
 HuggingFace itself ships, through a thin C ABI, and reads any model's
 `tokenizer.json`.
@@ -58,7 +94,6 @@ the `tokenizer.json` bytes directly, for assets loaded at runtime.
 dart run example/hf_tokenizers_example.dart
 ```
 
-![Terminal output of the example: a vocabulary of 30522, hello world encoded to four ids and decoded back, then a 38-token document cut into 12-token chunks.](https://raw.githubusercontent.com/Yusufihsangorgel/tokenizers/main/doc/demo.gif)
 
 ## Single tokens
 

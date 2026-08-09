@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="756" viewBox="0 0 900 756" font-family="ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+<style>.m{font-family:ui-monospace,SFMono-Regular,Menlo,DejaVu Sans Mono,monospace}.cap{font-size:13.5px;font-weight:700;letter-spacing:.09em}.lbl{font-size:12.5px;fill:#57606a;text-anchor:end}.ix{font-size:10.5px;text-anchor:middle}.note{font-size:16.5px;fill:#24292f}.tiny{font-size:12.5px;fill:#8c959f}</style>
+<rect x="1" y="1" width="898.0" height="754.0" rx="18" fill="#ffffff" stroke="#d0d7de"/>
+<text class="cap" x="56.0" y="50.0" fill="#57606a">ONE STRING, TWO WAYS TO COUNT IT</text>
+<text class="tiny" x="844.0" y="50" text-anchor="end">3 characters take two bytes</text>
+<text class="lbl" x="160.0" y="98.0">string index</text>
+<text class="lbl" x="160.0" y="136.0">the text</text>
+<text class="lbl" x="160.0" y="170.0">byte offset</text>
+<text class="ix" x="188.37037037037038" y="98.0" fill="#57606a">0</text>
+<rect x="177.0" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="188.37037037037038" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">T</text>
+<text class="ix" x="188.37037037037038" y="170.0" fill="#57606a">0</text>
+<text class="ix" x="213.11111111111111" y="98.0" fill="#57606a">1</text>
+<rect x="201.74074074074073" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="213.11111111111111" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">h</text>
+<text class="ix" x="213.11111111111111" y="170.0" fill="#57606a">1</text>
+<text class="ix" x="237.85185185185185" y="98.0" fill="#57606a">2</text>
+<rect x="226.48148148148147" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="237.85185185185185" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">e</text>
+<text class="ix" x="237.85185185185185" y="170.0" fill="#57606a">2</text>
+<text class="ix" x="262.5925925925926" y="98.0" fill="#57606a">3</text>
+<rect x="251.22222222222223" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="262.5925925925926" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117"> </text>
+<text class="ix" x="262.5925925925926" y="170.0" fill="#57606a">3</text>
+<text class="ix" x="287.3333333333333" y="98.0" fill="#57606a">4</text>
+<rect x="275.96296296296293" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="287.3333333333333" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">n</text>
+<text class="ix" x="287.3333333333333" y="170.0" fill="#57606a">4</text>
+<text class="ix" x="312.0740740740741" y="98.0" fill="#57606a">5</text>
+<rect x="300.7037037037037" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="312.0740740740741" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">a</text>
+<text class="ix" x="312.0740740740741" y="170.0" fill="#57606a">5</text>
+<text class="ix" x="336.81481481481484" y="98.0" fill="#57606a">6</text>
+<rect x="325.44444444444446" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#ffebe9" stroke="#ffcecb"/>
+<text class="m" x="336.81481481481484" y="136.0" text-anchor="middle" font-size="19.3px" fill="#cf222e" font-weight="700">ï</text>
+<text class="ix" x="336.81481481481484" y="170.0" fill="#57606a">6</text>
+<text class="ix" x="361.5555555555556" y="98.0" fill="#57606a">7</text>
+<rect x="350.1851851851852" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="361.5555555555556" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">v</text>
+<text class="ix" x="361.5555555555556" y="170.0" fill="#cf222e" font-weight="700">8</text>
+<text class="ix" x="386.2962962962963" y="98.0" fill="#57606a">8</text>
+<rect x="374.9259259259259" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="386.2962962962963" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">e</text>
+<text class="ix" x="386.2962962962963" y="170.0" fill="#cf222e" font-weight="700">9</text>
+<text class="ix" x="411.037037037037" y="98.0" fill="#57606a">9</text>
+<rect x="399.66666666666663" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="411.037037037037" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117"> </text>
+<text class="ix" x="411.037037037037" y="170.0" fill="#cf222e" font-weight="700">10</text>
+<text class="ix" x="435.77777777777777" y="98.0" fill="#57606a">10</text>
+<rect x="424.4074074074074" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="435.77777777777777" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">c</text>
+<text class="ix" x="435.77777777777777" y="170.0" fill="#cf222e" font-weight="700">11</text>
+<text class="ix" x="460.51851851851853" y="98.0" fill="#57606a">11</text>
+<rect x="449.14814814814815" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="460.51851851851853" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">a</text>
+<text class="ix" x="460.51851851851853" y="170.0" fill="#cf222e" font-weight="700">12</text>
+<text class="ix" x="485.2592592592593" y="98.0" fill="#57606a">12</text>
+<rect x="473.8888888888889" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="485.2592592592593" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">f</text>
+<text class="ix" x="485.2592592592593" y="170.0" fill="#cf222e" font-weight="700">13</text>
+<text class="ix" x="510.0" y="98.0" fill="#57606a">13</text>
+<rect x="498.6296296296296" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#ffebe9" stroke="#ffcecb"/>
+<text class="m" x="510.0" y="136.0" text-anchor="middle" font-size="19.3px" fill="#cf222e" font-weight="700">é</text>
+<text class="ix" x="510.0" y="170.0" fill="#cf222e" font-weight="700">14</text>
+<text class="ix" x="534.7407407407408" y="98.0" fill="#57606a">14</text>
+<rect x="523.3703703703704" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="534.7407407407408" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117"> </text>
+<text class="ix" x="534.7407407407408" y="170.0" fill="#cf222e" font-weight="700">16</text>
+<text class="ix" x="559.4814814814814" y="98.0" fill="#57606a">15</text>
+<rect x="548.1111111111111" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="559.4814814814814" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">i</text>
+<text class="ix" x="559.4814814814814" y="170.0" fill="#cf222e" font-weight="700">17</text>
+<text class="ix" x="584.2222222222222" y="98.0" fill="#57606a">16</text>
+<rect x="572.8518518518518" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="584.2222222222222" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">n</text>
+<text class="ix" x="584.2222222222222" y="170.0" fill="#cf222e" font-weight="700">18</text>
+<text class="ix" x="608.9629629629629" y="98.0" fill="#57606a">17</text>
+<rect x="597.5925925925926" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="608.9629629629629" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117"> </text>
+<text class="ix" x="608.9629629629629" y="170.0" fill="#cf222e" font-weight="700">19</text>
+<text class="ix" x="633.7037037037036" y="98.0" fill="#57606a">18</text>
+<rect x="622.3333333333333" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="633.7037037037036" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">S</text>
+<text class="ix" x="633.7037037037036" y="170.0" fill="#cf222e" font-weight="700">20</text>
+<text class="ix" x="658.4444444444445" y="98.0" fill="#57606a">19</text>
+<rect x="647.0740740740741" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#ffebe9" stroke="#ffcecb"/>
+<text class="m" x="658.4444444444445" y="136.0" text-anchor="middle" font-size="19.3px" fill="#cf222e" font-weight="700">ã</text>
+<text class="ix" x="658.4444444444445" y="170.0" fill="#cf222e" font-weight="700">21</text>
+<text class="ix" x="683.1851851851851" y="98.0" fill="#57606a">20</text>
+<rect x="671.8148148148148" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="683.1851851851851" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">o</text>
+<text class="ix" x="683.1851851851851" y="170.0" fill="#cf222e" font-weight="700">23</text>
+<text class="ix" x="707.9259259259259" y="98.0" fill="#57606a">21</text>
+<rect x="696.5555555555555" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="707.9259259259259" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117"> </text>
+<text class="ix" x="707.9259259259259" y="170.0" fill="#cf222e" font-weight="700">24</text>
+<text class="ix" x="732.6666666666666" y="98.0" fill="#57606a">22</text>
+<rect x="721.2962962962963" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="732.6666666666666" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">P</text>
+<text class="ix" x="732.6666666666666" y="170.0" fill="#cf222e" font-weight="700">25</text>
+<text class="ix" x="757.4074074074074" y="98.0" fill="#57606a">23</text>
+<rect x="746.0370370370371" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="757.4074074074074" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">a</text>
+<text class="ix" x="757.4074074074074" y="170.0" fill="#cf222e" font-weight="700">26</text>
+<text class="ix" x="782.1481481481482" y="98.0" fill="#57606a">24</text>
+<rect x="770.7777777777778" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="782.1481481481482" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">u</text>
+<text class="ix" x="782.1481481481482" y="170.0" fill="#cf222e" font-weight="700">27</text>
+<text class="ix" x="806.8888888888888" y="98.0" fill="#57606a">25</text>
+<rect x="795.5185185185185" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="806.8888888888888" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">l</text>
+<text class="ix" x="806.8888888888888" y="170.0" fill="#cf222e" font-weight="700">28</text>
+<text class="ix" x="831.6296296296296" y="98.0" fill="#57606a">26</text>
+<rect x="820.2592592592592" y="108.0" width="22.74074074074074" height="42.0" rx="4" fill="#f6f8fa" stroke="#d0d7de"/>
+<text class="m" x="831.6296296296296" y="136.0" text-anchor="middle" font-size="19.3px" fill="#0d1117">o</text>
+<text class="ix" x="831.6296296296296" y="170.0" fill="#cf222e" font-weight="700">29</text>
+<text class="note" x="176.0" y="202"><tspan class="m" font-size="15px">text.length</tspan> is <tspan font-weight="700">27</tspan>, <tspan class="m" font-size="15px">utf8.encode(text).length</tspan> is <tspan font-weight="700">30</tspan>, and the byte offset ends <tspan font-weight="700" fill="#cf222e">3 ahead</tspan></text>
+<line x1="56.0" y1="228.0" x2="844.0" y2="228.0" stroke="#d0d7de"/>
+<text class="cap" x="56.0" y="262.0" fill="#57606a">EVERY SPAN THE TOKENIZER RETURNED, READ BOTH WAYS</text>
+<text class="tiny" x="56.0" y="280">the token is what the normalizer produced, and the span points back into the original text</text>
+<text class="cap" x="56.0" y="308.0" fill="#57606a">TOKEN</text>
+<text class="cap" x="196.0" y="308.0" fill="#57606a">SPAN</text>
+<text class="cap" x="310.0" y="308.0" fill="#1a7f37">AS UTF-8 BYTES</text>
+<text class="cap" x="606.0" y="308.0" fill="#cf222e">AS STRING INDICES</text>
+<text class="tiny m" x="310.0" y="324">utf8.decode(bytes.sublist(s, e))</text>
+<text class="tiny m" x="606.0" y="324">text.substring(s, e)</text>
+<rect x="56.0" y="336.0" width="788.0" height="36.0" rx="7" fill="#f6f8fa" stroke="#d0d7de"/>
+<rect x="68.0" y="343.0" width="49.0" height="23" rx="5" fill="#ddf4ff" stroke="#54aeff"/>
+<text class="m" x="92.5" y="360.0" text-anchor="middle" font-size="15px" fill="#0d1117">the</text>
+<text class="m" x="196.0" y="363.0" font-size="15px" fill="#57606a">[0, 3)</text>
+<text class="m" x="310.0" y="363.0" font-size="16px" fill="#0d1117">"The"</text>
+<text class="m" x="606.0" y="363.0" font-size="16px" fill="#0d1117">"The"</text>
+<text x="840.0" y="363.0" text-anchor="end" font-size="17px" fill="#1a7f37">✓</text>
+<rect x="56.0" y="378.0" width="788.0" height="36.0" rx="7" fill="#fff8f7" stroke="#ffcecb"/>
+<rect x="68.0" y="385.0" width="67.0" height="23" rx="5" fill="#ddf4ff" stroke="#54aeff"/>
+<text class="m" x="101.5" y="402.0" text-anchor="middle" font-size="15px" fill="#0d1117">naive</text>
+<text class="m" x="196.0" y="405.0" font-size="15px" fill="#57606a">[4, 10)</text>
+<text class="m" x="310.0" y="405.0" font-size="16px" fill="#0d1117">"naïve"</text>
+<text class="m" x="606.0" y="405.0" font-size="16px" fill="#cf222e">"naïve "</text>
+<text x="840.0" y="405.0" text-anchor="end" font-size="17px" fill="#cf222e">✗</text>
+<rect x="56.0" y="420.0" width="788.0" height="36.0" rx="7" fill="#fff8f7" stroke="#ffcecb"/>
+<rect x="68.0" y="427.0" width="58.0" height="23" rx="5" fill="#ddf4ff" stroke="#54aeff"/>
+<text class="m" x="97.0" y="444.0" text-anchor="middle" font-size="15px" fill="#0d1117">cafe</text>
+<text class="m" x="196.0" y="447.0" font-size="15px" fill="#57606a">[11, 16)</text>
+<text class="m" x="310.0" y="447.0" font-size="16px" fill="#0d1117">"café"</text>
+<text class="m" x="606.0" y="447.0" font-size="16px" fill="#cf222e">"afé i"</text>
+<text x="840.0" y="447.0" text-anchor="end" font-size="17px" fill="#cf222e">✗</text>
+<rect x="56.0" y="462.0" width="788.0" height="36.0" rx="7" fill="#fff8f7" stroke="#ffcecb"/>
+<rect x="68.0" y="469.0" width="40.0" height="23" rx="5" fill="#ddf4ff" stroke="#54aeff"/>
+<text class="m" x="88.0" y="486.0" text-anchor="middle" font-size="15px" fill="#0d1117">in</text>
+<text class="m" x="196.0" y="489.0" font-size="15px" fill="#57606a">[17, 19)</text>
+<text class="m" x="310.0" y="489.0" font-size="16px" fill="#0d1117">"in"</text>
+<text class="m" x="606.0" y="489.0" font-size="16px" fill="#cf222e">" S"</text>
+<text x="840.0" y="489.0" text-anchor="end" font-size="17px" fill="#cf222e">✗</text>
+<rect x="56.0" y="504.0" width="788.0" height="36.0" rx="7" fill="#fff8f7" stroke="#ffcecb"/>
+<rect x="68.0" y="511.0" width="49.0" height="23" rx="5" fill="#ddf4ff" stroke="#54aeff"/>
+<text class="m" x="92.5" y="528.0" text-anchor="middle" font-size="15px" fill="#0d1117">sao</text>
+<text class="m" x="196.0" y="531.0" font-size="15px" fill="#57606a">[20, 24)</text>
+<text class="m" x="310.0" y="531.0" font-size="16px" fill="#0d1117">"São"</text>
+<text class="m" x="606.0" y="531.0" font-size="16px" fill="#cf222e">"o Pa"</text>
+<text x="840.0" y="531.0" text-anchor="end" font-size="17px" fill="#cf222e">✗</text>
+<rect x="56.0" y="546.0" width="788.0" height="36.0" rx="7" fill="#fff8f7" stroke="#ffcecb"/>
+<rect x="68.0" y="553.0" width="67.0" height="23" rx="5" fill="#ddf4ff" stroke="#54aeff"/>
+<text class="m" x="101.5" y="570.0" text-anchor="middle" font-size="15px" fill="#0d1117">paulo</text>
+<text class="m" x="196.0" y="573.0" font-size="15px" fill="#57606a">[25, 30)</text>
+<text class="m" x="310.0" y="573.0" font-size="16px" fill="#0d1117">"Paulo"</text>
+<text class="m" x="606.0" y="573.0" font-size="16px" fill="#cf222e" font-weight="700">throws RangeError</text>
+<text x="840.0" y="573.0" text-anchor="end" font-size="17px" fill="#cf222e">✗</text>
+<line x1="56.0" y1="610.0" x2="844.0" y2="610.0" stroke="#d0d7de"/>
+<text class="note" x="56.0" y="642.0">Both columns are right while the text is ASCII.</text>
+<text class="note" x="56.0" y="668.0">From the first two-byte character on, <tspan font-weight="700" fill="#cf222e">5 of 6</tspan> spans name different text.</text>
+<text class="note" x="56.0" y="694.0">The last one ends at byte <tspan font-weight="700">30</tspan> in a string of length <tspan font-weight="700">27</tspan>, and it is the only one that fails loudly.</text>
+<text class="tiny m" x="56.0" y="726.0">tool/offsets_figure.dart · test/fixtures/bert-base-uncased.json</text>
+</svg>

@@ -12,4 +12,5 @@ native/tokenizers_ffi/target/
 # the repository and out of the download.
 doc/*
 !doc/parity.png
+!doc/offsets.png
 !doc/demo.gif

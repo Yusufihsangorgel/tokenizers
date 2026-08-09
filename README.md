@@ -95,6 +95,15 @@ for (final t in tk.encodeWithOffsets(text, addSpecialTokens: false)) {
 The offsets are **UTF-8 byte** offsets, which is what the underlying crate
 reports. They are not UTF-16 indices. Slice `utf8.encode(text)` rather than
 calling `text.substring`, or the math goes wrong on any non-ASCII input.
+
+![Two rulers over the sentence "The naïve café in São Paulo": the string index ends at 26 while the byte offset ends at 29, pulling one further ahead at each accented character. Below them the six token spans are read twice, and five of the six substring readings return different text while the last throws RangeError.](https://raw.githubusercontent.com/Yusufihsangorgel/tokenizers/main/doc/offsets.png)
+
+That sentence is 27 UTF-16 units and 30 bytes. Read its six spans with
+`substring` and five hand back different text while the sixth reaches past the
+end and throws, which leaves the crash as the only one a test would notice.
+`dart run tool/offsets_figure.dart` draws the picture by running both readings
+and keeping whatever each one returned.
+
 Special tokens like `[CLS]` come back with an empty span (`start == end`).
 
 ## Token budgets

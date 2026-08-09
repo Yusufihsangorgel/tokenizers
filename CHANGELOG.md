@@ -1,3 +1,9 @@
+## 1.0.6
+
+- The README leads with the recording of the package working. The file was
+  already in the repository and the page never showed it, so a reader had to
+  scroll past the prose to find out what the package does, or never found out.
+
 ## 1.0.5
 
 - The offsets section has a picture of the trap it describes.

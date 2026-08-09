@@ -5,6 +5,10 @@ retrieval, and you need the tokenizer the model was trained with. A
 reimplementation that is nearly right hands back ids the model never saw, and
 nothing downstream complains.
 
+![A terminal run of the example: a vocabulary of 30522 loads, "hello world"
+encodes to four ids and decodes back, and a 38-token document is split into
+12-token chunks on token boundaries rather than characters](https://raw.githubusercontent.com/Yusufihsangorgel/hf_tokenizers/main/doc/demo.gif)
+
 This package reimplements nothing. It binds the Rust `tokenizers` crate that
 HuggingFace itself ships, through a thin C ABI, and reads any model's
 `tokenizer.json`.

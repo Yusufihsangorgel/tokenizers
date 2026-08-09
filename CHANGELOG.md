@@ -1,3 +1,9 @@
+## 1.0.4
+
+- `example/parity.dart` runs the parity the headline claims. The page says the
+  ids are byte-exact with the model's own `tokenizer.json`; the example now
+  checks them rather than describing them. Docs and example only.
+
 ## 1.0.3
 
 - The package page now opens on evidence rather than a banner. One sentence is

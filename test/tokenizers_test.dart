@@ -24,9 +24,8 @@ void main() {
     });
 
     test('count matches encode().length, including specials', () {
-      // The whole point of count is that it is the same number encode would
-      // give, without building the id list. BERT's two specials make the empty
-      // string the interesting case: it is 2, not 0.
+      // count is the same number encode would give. BERT's two specials make
+      // the empty string the interesting case: it is 2, not 0.
       expect(tk.count('hello world'), 4);
       expect(tk.count('hello world', addSpecialTokens: false), 2);
       expect(tk.count(''), 2);

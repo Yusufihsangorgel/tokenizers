@@ -4,14 +4,17 @@
   at the ids, and were writing `encode(text).length`. That is the number this
   returns, including the same `addSpecialTokens: true` default, so BERT's empty
   string is 2. It is not a faster path. The HuggingFace crate has `encode_fast`,
-  documented as not computing offsets; on this package's BERT fixture that skip
-  is 5–12% at the crate (`cargo run --release --example count_bench` in
-  `native/tokenizers_ffi`) and disappears once the call has crossed FFI into
-  Dart (`dart run tool/measure_count.dart`). Normalize, pre-tokenize, the model
-  and post-process still run either way — those steps are what determine the
-  count — so a new native symbol would have rebuilt every prebuilt binary for a
-  saving the Dart caller cannot see. `count` is the convenience; `encode` is
-  still what you call for the ids.
+  documented as not computing offsets. On this package's BERT fixture, the
+  285-character prompt from `example/context_budget.dart` (78 tokens) took
+  42–45 µs through `encode` and 39–42 µs through `encode_fast` across three
+  warmed runs of `cargo run --release --example count_bench` in
+  `native/tokenizers_ffi` — about 7–10%. A short string is a wash. From Dart,
+  `count` and `encode().length` are both 42 µs on that prompt
+  (`dart run tool/measure_count.dart`), because `count` is `encode().length`.
+  Normalize, pre-tokenize, the model and post-process still run either way —
+  those steps are what determine the count — so a new native symbol would have
+  rebuilt every prebuilt binary for a skip the Dart caller cannot see. `count`
+  is the convenience; `encode` is still what you call for the ids.
 - **Say where `tokenizer.json` comes from.** The package needs one and does
   not ship any. The README now names the files three model repositories
   actually expose (`tokenizer.json` is the one this package loads; `vocab.txt`

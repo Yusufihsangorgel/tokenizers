@@ -1,3 +1,9 @@
+## 1.2.1
+
+- `code_assets` moved to `^2.0.0`. The 1.x constraint costs a pub.dev
+  scorecard point once the grace period on the 2.0.0 release expires. The
+  Rust library builds unchanged and the suite runs against a fresh one.
+
 ## 1.2.0
 
 - **Add `count`.** Most callers asking how many tokens a prompt is never look

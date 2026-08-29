@@ -1,0 +1,16 @@
+# hf_tokenizers
+
+HuggingFace tokenizers for Dart over FFI. Load any tokenizer.json and get byte-exact BPE, WordPiece, and Unigram encoding, backed by the Rust crate.
+
+pub.dev: https://pub.dev/packages/hf_tokenizers
+source: https://github.com/Yusufihsangorgel/tokenizers
+
+## Before you call it
+
+README.md carries the usage, the measured comparison against the alternatives, and a note on when not to reach for this package.
+
+## Layout
+
+- `lib/` — public API
+- `example/` — runnable examples
+- `test/` — the suite; `dart test` (or `flutter test`) runs it

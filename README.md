@@ -96,6 +96,107 @@ takes the `tokenizer.json` bytes directly, for assets loaded at runtime.
 dart run example/hf_tokenizers_example.dart
 ```
 
+## Where the tokenizer.json comes from
+
+This package does not ship one. HuggingFace publishes the file next to the
+weights, and `Tokenizer.fromFile` wants that file. The BERT copy in
+`test/fixtures/` is for the tests in this repository; it is not a tokenizer
+for some other model, and it is not licensed as this package is.
+
+### What a model repository actually contains
+
+Checked against three public Hub trees (2026-08-29):
+
+| File | `google-bert/bert-base-uncased` | `openai-community/gpt2` | `meta-llama/Meta-Llama-3-8B` |
+| ---- | ------------------------------- | ----------------------- | ---------------------------- |
+| `tokenizer.json` | yes (466062 bytes) | yes | yes |
+| `tokenizer_config.json` | yes (48 bytes: `do_lower_case`, `model_max_length`) | yes | yes |
+| `vocab.txt` | yes (WordPiece) | — | — |
+| `vocab.json` / `merges.txt` | — | yes (BPE) | — |
+| `special_tokens_map.json` | — | — | yes |
+| weights (`*.safetensors`, …) | yes | yes | yes |
+| `LICENSE` | yes (Apache 2.0) | no file; card is `mit` | yes (Llama 3 Community) |
+| `USE_POLICY.md` | — | — | yes |
+
+`tokenizer.json` is the serialized HuggingFace `tokenizers` pipeline this
+package loads: normalizer, pre-tokenizer, model, post-processor, decoder, added
+tokens. `tokenizer_config.json` is for `transformers`. `vocab.txt` and
+`merges.txt` are what a slow Python tokenizer reads. Passing any of those, or
+ordinary JSON, to `fromFile` throws `FormatException: Not a valid tokenizer.json`.
+
+Llama 3 also ships `original/` with the conversion inputs. The Hub card for
+that repo is `license: llama3` and `gated: manual`: the files are listed, but
+downloading them requires accepting the licence on the Hub.
+
+### How to fetch one
+
+One file, not the weights:
+
+```
+curl -L https://huggingface.co/google-bert/bert-base-uncased/resolve/main/tokenizer.json -o tokenizer.json
+```
+
+or, with the Hub CLI:
+
+```
+hf download google-bert/bert-base-uncased tokenizer.json
+```
+
+Point `Tokenizer.fromFile` at that path. `Tokenizer.fromBytes` takes the same
+bytes from an asset. The Hub documents both the CLI and `hf_hub_download` in
+[Downloading models](https://huggingface.co/docs/hub/en/models-downloading).
+
+A gated repo will not serve the file until you have accepted its licence and
+pass a token.
+
+### The file carries the model's licence
+
+The Hub puts a licence on the *repository*, not on each file. Hugging Face's
+own docs: "You are able to add a license to any repo that you create on the
+Hugging Face Hub to let other users know about the permissions that you want
+to attribute to your code or data. […] Remember to seek out and respect a
+project’s license if you’re considering using their code or data."
+([Licenses](https://huggingface.co/docs/hub/en/repositories-licenses))
+
+Shipping `tokenizer.json` inside an app is redistributing that work. What the
+terms actually say depends on the repo. Two that people actually ship:
+
+**Apache License 2.0**, which is what
+[`google-bert/bert-base-uncased`](https://huggingface.co/google-bert/bert-base-uncased)
+declares on the model card (`License: apache-2.0`) and in the `LICENSE` file
+in the repo (Apache License, Version 2.0, January 2004). Section 2 grants a
+copyright licence "to reproduce, prepare Derivative Works of, publicly display,
+publicly perform, sublicense, and distribute the Work". Section 4 allows
+reproduction and distribution "in any medium, with or without modifications"
+provided you (1) give recipients a copy of the licence, (2) mark modified
+files as changed, (3) retain copyright, patent, trademark, and attribution
+notices, and (4) if the Work includes a `NOTICE` file, include a readable copy
+of its attribution notices. That tree has a `LICENSE` and no `NOTICE`. Section
+6 does not grant trademark rights except as needed to describe origin. This
+repository's BERT fixture is that file.
+
+**Llama 3 Community License**, which is what
+[`meta-llama/Meta-Llama-3-8B`](https://huggingface.co/meta-llama/Meta-Llama-3-8B)
+declares (`license: llama3`). The agreement defines "Llama Materials" as Meta
+Llama 3 and its documentation, "including machine-learning model code, trained
+model weights, inference-enabling code" and related elements
+([`LICENSE`](https://github.com/meta-llama/llama3/blob/main/LICENSE) in
+`meta-llama/llama3`). `tokenizer.json` is part of that distribution. If you
+distribute the Llama Materials or a product that uses them, you must (A)
+provide a copy of the Agreement with those materials, and (B) prominently
+display "Built with Meta Llama 3" on a related website, UI, about page, or
+product documentation (section 1.b.i). Copies must keep the attribution notice
+in a Notice file (1.b.iii). Use must follow the Acceptable Use Policy
+(1.b.iv). Section 1.b.v forbids using the Llama Materials or their outputs
+"to improve any other large language model". Section 2 is a snapshot, not a
+running cap: if, on the 18 April 2024 release date, the products or services
+made available by or for the licensee (or affiliates) had more than 700 million
+monthly active users in the preceding calendar month, those rights are not
+granted unless Meta separately licenses them.
+
+This package's MIT licence covers the Dart API and the Rust binding. It does
+not relicense a `tokenizer.json` you load. Do not add another tokenizer file
+to this repository; the BERT fixture is already here, under Apache-2.0.
 
 ## Single tokens
 
@@ -277,4 +378,6 @@ when the target is a phone.
 
 ## License
 
-MIT. The bound library is HuggingFace's `tokenizers` crate (Apache-2.0).
+MIT. The bound library is HuggingFace's `tokenizers` crate (Apache-2.0). A
+`tokenizer.json` you load is not this licence; see [Where the tokenizer.json
+comes from](#where-the-tokenizerjson-comes-from).

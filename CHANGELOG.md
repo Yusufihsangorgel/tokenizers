@@ -12,6 +12,15 @@
   count — so a new native symbol would have rebuilt every prebuilt binary for a
   saving the Dart caller cannot see. `count` is the convenience; `encode` is
   still what you call for the ids.
+- **Say where `tokenizer.json` comes from.** The package needs one and does
+  not ship any. The README now names the files three model repositories
+  actually expose (`tokenizer.json` is the one this package loads; `vocab.txt`
+  and `merges.txt` are not a substitute), the two commands that fetch a single
+  file rather than the weights, and the licence the file carries — the Hub
+  licence is on the repository, so shipping the file inside an app is
+  redistributing that work. Apache-2.0 (BERT) and the Llama 3 Community
+  License are quoted from the terms rather than paraphrased into "check the
+  licence". Docs only; nothing under `lib/` changed.
 
 ## 1.1.0
 

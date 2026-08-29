@@ -23,7 +23,7 @@ void main() {
 }
 ```
 
-In another package: `dart pub add hf_tokenizers`, then pass that model's `tokenizer.json` into `Tokenizer.fromFile`, or the bytes into `Tokenizer.fromBytes` for a bundled asset. Do not use this BERT fixture against a different model.
+In another package: `dart pub add hf_tokenizers`, then pass that model's `tokenizer.json` into `Tokenizer.fromFile`, or the bytes into `Tokenizer.fromBytes` for a bundled asset. Do not use this BERT fixture against a different model. The file lives next to the weights on the Hub; `vocab.txt` / `merges.txt` are not a substitute. It carries the model's licence (the Hub licence is on the repository), so shipping it inside an app is redistributing that work — see the README section. Do not vendor another `tokenizer.json` into this repository.
 
 ## Contracts
 

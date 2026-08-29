@@ -43,9 +43,8 @@ void main() {
     final actual = sha256.convert(input).toString();
 
     final hook = File('hook/build.dart').readAsStringSync();
-    final digest = RegExp(
-      r"nativeSourcesDigest\s*=\s*\n?\s*'([0-9a-f]{64})'",
-    ).firstMatch(hook);
+    final digest = RegExp(r"nativeSourcesDigest\s*=\s*\n?\s*'([0-9a-f]{64})'")
+        .firstMatch(hook);
     final tag = RegExp(r"_version\s*=\s*'([^']+)'").firstMatch(hook);
     expect(digest, isNotNull, reason: 'hook/build.dart has no digest constant');
     expect(tag, isNotNull, reason: 'hook/build.dart has no _version constant');

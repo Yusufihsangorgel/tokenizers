@@ -8,24 +8,30 @@ import 'package:ffi/ffi.dart';
 
 typedef _FromBytesC = Pointer<Void> Function(Pointer<Uint8>, IntPtr);
 typedef _FromBytes = Pointer<Void> Function(Pointer<Uint8>, int);
-typedef _EncodeC =
-    Pointer<Uint32> Function(
-      Pointer<Void>,
-      Pointer<Utf8>,
-      Bool,
-      Pointer<IntPtr>,
-    );
-typedef _Encode =
-    Pointer<Uint32> Function(
-      Pointer<Void>,
-      Pointer<Utf8>,
-      bool,
-      Pointer<IntPtr>,
-    );
-typedef _DecodeC =
-    Pointer<Utf8> Function(Pointer<Void>, Pointer<Uint32>, IntPtr, Bool);
-typedef _Decode =
-    Pointer<Utf8> Function(Pointer<Void>, Pointer<Uint32>, int, bool);
+typedef _EncodeC = Pointer<Uint32> Function(
+  Pointer<Void>,
+  Pointer<Utf8>,
+  Bool,
+  Pointer<IntPtr>,
+);
+typedef _Encode = Pointer<Uint32> Function(
+  Pointer<Void>,
+  Pointer<Utf8>,
+  bool,
+  Pointer<IntPtr>,
+);
+typedef _DecodeC = Pointer<Utf8> Function(
+  Pointer<Void>,
+  Pointer<Uint32>,
+  IntPtr,
+  Bool,
+);
+typedef _Decode = Pointer<Utf8> Function(
+  Pointer<Void>,
+  Pointer<Uint32>,
+  int,
+  bool,
+);
 typedef _FreeIdsC = Void Function(Pointer<Uint32>, IntPtr);
 typedef _FreeIds = void Function(Pointer<Uint32>, int);
 typedef _FreeStrC = Void Function(Pointer<Utf8>);

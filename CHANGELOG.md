@@ -1,3 +1,18 @@
+## 1.2.0
+
+- **Add `count`.** Most callers asking how many tokens a prompt is never look
+  at the ids, and were writing `encode(text).length`. That is the number this
+  returns, including the same `addSpecialTokens: true` default, so BERT's empty
+  string is 2. It is not a faster path. The HuggingFace crate has `encode_fast`,
+  documented as not computing offsets; on this package's BERT fixture that skip
+  is 5–12% at the crate (`cargo run --release --example count_bench` in
+  `native/tokenizers_ffi`) and disappears once the call has crossed FFI into
+  Dart (`dart run tool/measure_count.dart`). Normalize, pre-tokenize, the model
+  and post-process still run either way — those steps are what determine the
+  count — so a new native symbol would have rebuilt every prebuilt binary for a
+  saving the Dart caller cannot see. `count` is the convenience; `encode` is
+  still what you call for the ids.
+
 ## 1.1.0
 
 - The README now answers, in its first screen, why to reach for this rather

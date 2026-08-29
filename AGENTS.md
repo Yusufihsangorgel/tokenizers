@@ -10,15 +10,15 @@ A character heuristic is not a count: `example/context_budget.dart`'s 285-charac
 
 ## Usage
 
-Shortest path that actually counts tokens, from `example/hf_tokenizers_example.dart`. `ids.length` is the number to compare to a context window.
+Shortest path that actually counts tokens, from `example/hf_tokenizers_example.dart`. `count` is the number to compare to a context window; `encode` when you need the ids.
 
 ```dart
 import 'package:hf_tokenizers/hf_tokenizers.dart';
 
 void main() {
   final tk = Tokenizer.fromFile('test/fixtures/bert-base-uncased.json');
+  print(tk.count('hello world')); // 4
   final ids = tk.encode('hello world'); // [101, 7592, 2088, 102]
-  print(ids.length); // 4
   tk.close();
 }
 ```
@@ -45,7 +45,7 @@ String piece(String text, TokenOffset t) {
 
 **`Tokenizer.close`** frees that handle. Optional: a `NativeFinalizer` also releases it. After `close`, further calls throw.
 
-**`Tokenizer.encode` defaults `addSpecialTokens: true`.** For this BERT fixture that prepends `[CLS]` (101) and appends `[SEP]` (102): `'hello world'` is 4 tokens, `''` encodes to `[101, 102]`. Content-only count: `encode(text, addSpecialTokens: false).length`. `truncateToTokens` and `chunkByTokens` use the same default, so a budget of 512 leaves 510 for text; a budget of 1 or 2 is rejected.
+**`Tokenizer.encode` and `Tokenizer.count` default `addSpecialTokens: true`.** For this BERT fixture that prepends `[CLS]` (101) and appends `[SEP]` (102): `'hello world'` is 4 tokens, `''` encodes to `[101, 102]`. Content-only count: `count(text, addSpecialTokens: false)`. `count` is `encode().length`, not a faster path: the crate's `encode_fast` skip is lost in the tokenize work on this fixture. `truncateToTokens` and `chunkByTokens` use the same default, so a budget of 512 leaves 510 for text; a budget of 1 or 2 is rejected.
 
 ## Mistakes
 
@@ -110,6 +110,8 @@ hf_tokenizers has no prebuilt binary for $os and cannot cross-compile it from so
 - `hook/build.dart` — prebuilt from GitHub release `v0.5.0`, else cargo on the host
 - `test/fixtures/bert-base-uncased.json` — vocab 30522
 - `example/` — `hf_tokenizers_example.dart`, `parity.dart`, `context_budget.dart`, `rag_chunking.dart`
+- `tool/measure_count.dart` — wall time of `count` against `encode().length`
+- `native/tokenizers_ffi/examples/count_bench.rs` — crate `encode` vs `encode_fast`
 - `test/` — `dart test`
 
 ```

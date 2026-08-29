@@ -23,6 +23,34 @@ void main() {
       expect(tk.encode('hello world', addSpecialTokens: false), [7592, 2088]);
     });
 
+    test('count matches encode().length, including specials', () {
+      // The whole point of count is that it is the same number encode would
+      // give, without building the id list. BERT's two specials make the empty
+      // string the interesting case: it is 2, not 0.
+      expect(tk.count('hello world'), 4);
+      expect(tk.count('hello world', addSpecialTokens: false), 2);
+      expect(tk.count(''), 2);
+      expect(tk.count('', addSpecialTokens: false), 0);
+      const mixed = 'The naïve café in São Paulo';
+      expect(tk.count(mixed), tk.encode(mixed).length);
+      expect(
+        tk.count(mixed, addSpecialTokens: false),
+        tk.encode(mixed, addSpecialTokens: false).length,
+      );
+    });
+
+    test('count sees past a U+0000 the same way encode does', () {
+      const withNul = 'hello\u0000world';
+      expect(
+        tk.count(withNul, addSpecialTokens: false),
+        tk.encode(withNul, addSpecialTokens: false).length,
+      );
+      expect(
+        tk.count(withNul, addSpecialTokens: false),
+        greaterThan(tk.count('hello', addSpecialTokens: false)),
+      );
+    });
+
     test('a U+0000 byte does not truncate the input', () {
       // The old FFI passed a NUL-terminated buffer, so a U+0000 cut the text
       // off at the first NUL and every token after it was lost. With an
@@ -170,6 +198,7 @@ void main() {
   test('using a closed tokenizer throws', () {
     final tk = Tokenizer.fromFile(fixture)..close();
     expect(() => tk.encode('x'), throwsStateError);
+    expect(() => tk.count('x'), throwsStateError);
   });
 
   test('closing twice is safe', () {

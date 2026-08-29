@@ -82,13 +82,15 @@ the top one against the ids above.
 final ids = tk.encode('hello world');   // [101, 7592, 2088, 102]  (bert)
 final text = tk.decode(ids);            // "hello world"
 print(tk.vocabSize);                    // 30522
+print(tk.count('hello world'));         // 4
 
 tk.close(); // optional; a finalizer also frees the native tokenizer
 ```
 
 `encode` adds the model's special tokens by default (BERT's `[CLS]`/`[SEP]`, and
-so on); pass `addSpecialTokens: false` to skip them. `Tokenizer.fromBytes` takes
-the `tokenizer.json` bytes directly, for assets loaded at runtime.
+so on); pass `addSpecialTokens: false` to skip them. `count` is the same number
+as `encode(text).length` for callers who do not need the ids. `Tokenizer.fromBytes`
+takes the `tokenizer.json` bytes directly, for assets loaded at runtime.
 
 ```
 dart run example/hf_tokenizers_example.dart

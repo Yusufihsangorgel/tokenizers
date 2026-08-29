@@ -41,7 +41,7 @@ void main(List<String> args) {
   //    a different amount for every piece of text: prose, code, identifiers and
   //    punctuation all tokenize at different rates.
   final estimate = (_prompt.length / 4).ceil();
-  final actual = tk.encode(_prompt).length;
+  final actual = tk.count(_prompt);
   final off = ((estimate - actual) / actual * 100).round();
   print('a ${_prompt.length}-character prompt');
   print('  chars / 4 says   $estimate tokens');

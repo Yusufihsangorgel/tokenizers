@@ -154,6 +154,23 @@ final class Tokenizer implements Finalizable {
     return token;
   }
 
+  /// The number of tokens [text] encodes to.
+  ///
+  /// Same value as `encode(text, addSpecialTokens: addSpecialTokens).length`,
+  /// including the same default: [addSpecialTokens] is true, so on this
+  /// package's BERT fixture an empty string counts as 2 (`[CLS]` and `[SEP]`).
+  ///
+  /// The HuggingFace crate has `encode_fast`, which skips converting each
+  /// token's span back to offsets in the original string. It still runs
+  /// normalize, pre-tokenize, the model and post-process: those steps are
+  /// what determine the count, and there is no crate API that skips them.
+  /// Measured on the BERT fixture this package ships (`tool/measure_count.dart`),
+  /// that skip is lost in the tokenize work, so this method does not claim a
+  /// faster path. It exists so a caller who only needs the number does not
+  /// have to take `.length` of a list they immediately throw away.
+  int count(String text, {bool addSpecialTokens = true}) =>
+      encode(text, addSpecialTokens: addSpecialTokens).length;
+
   /// Encodes [text] into token ids.
   ///
   /// [addSpecialTokens] controls whether the model's special tokens (such as

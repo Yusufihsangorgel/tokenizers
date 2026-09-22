@@ -1,3 +1,9 @@
+## 1.2.2
+
+- The README showed the demo GIF twice, and the first copy linked the
+  repository's old name, so pub.dev rendered it as a broken image above the
+  working one. The broken copy is gone. No code changed.
+
 ## 1.2.1
 
 - `code_assets` moved to `^2.0.0`. The 1.x constraint costs a pub.dev

@@ -1,15 +1,13 @@
 name: hf_tokenizers
-description: >-
-  HuggingFace tokenizers for Dart over FFI. Load any tokenizer.json and get
-  byte-exact BPE, WordPiece, and Unigram encoding, backed by the Rust crate.
+description: "Hugging Face tokenizers for Dart via Rust FFI. Load tokenizer.json for byte-exact BPE, WordPiece and Unigram encoding."
 version: 1.2.2
 repository: https://github.com/Yusufihsangorgel/tokenizers
 topics:
-  - llm
-  - ai
   - tokenizer
-  - ffi
-  - nlp
+  - huggingface
+  - bpe
+  - wordpiece
+  - unigram
 
 # Kept on one double-quoted line each. A folded `>-` block turns an
 # over-indented continuation into a literal newline, which is how the previous

@@ -1,0 +1,317 @@
+{
+  "schema_version": 1,
+  "package": "hf_tokenizers",
+  "survey_digest": "f90f45c8a172068c3ed3b9488ba5a7cb4e58efa93c380d2d9a70b399349ec35e",
+  "items": [
+    {
+      "id": "hf_tokenizers-D001",
+      "source_index": 1,
+      "source_item_digest": "3290588bcea17532b1bd0c919abd62d733385fda226f77e62ce7863149767086",
+      "baseline_revision": "eeb67b9",
+      "status": "open",
+      "size": "medium",
+      "locations": [
+        {
+          "path": "hook/build.dart",
+          "lines": "114-129"
+        }
+      ],
+      "kind": "security (supply chain)",
+      "observation": "The integrity of the downloaded prebuilt binary is not verified. `nativeSourcesDigest` covers only the sources and the hook does not read it. A tampered release asset is loaded directly.",
+      "certainty": "confirmed",
+      "proposed_fix": "Pin a SHA-256 for every release asset (produced by the CI binaries job), verify after download, fall back to a source build on mismatch; add a test.",
+      "related_rule_ids": [
+        "hf_tokenizers/TK-08"
+      ],
+      "issue_url": null,
+      "closure_criteria": "Every release asset carries a pinned SHA-256 produced by the CI binaries job and the hook verifies it after download. A mismatch triggers the source-build fallback and a test covers that path.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "hf_tokenizers-D002",
+      "source_index": 2,
+      "source_item_digest": "5d30918313dd778ad12bc71522c59af13a8986a25f4a78b2ba0555552498ab96",
+      "baseline_revision": "eeb67b9",
+      "status": "open",
+      "size": "medium",
+      "locations": [
+        {
+          "path": "native/tokenizers_ffi/src/lib.rs",
+          "lines": null
+        }
+      ],
+      "kind": "FFI safety",
+      "observation": "A panic inside the crate terminates the process at the ABI boundary (unwinding out of extern C aborts since Rust 1.81). The C++ sibling shims catch the exception with `try/catch(...)` (re2_shim.cc:51-69; simdjson_shim.cpp:257-285). The effect was not exercised.",
+      "certainty": "probable",
+      "proposed_fix": "Wrap every body with `std::panic::catch_unwind`, return null or false on panic (the Dart side already converts to StateError); publish with a `_version` and digest update.",
+      "related_rule_ids": [
+        "hf_tokenizers/TK-04",
+        "hf_tokenizers/TK-06",
+        "hf_tokenizers/TK-07"
+      ],
+      "issue_url": null,
+      "closure_criteria": "Every extern C body in native/tokenizers_ffi/src/lib.rs is wrapped in std::panic::catch_unwind and returns null or false on panic. The change ships with an updated _version tag and nativeSourcesDigest.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "hf_tokenizers-D003",
+      "source_index": 3,
+      "source_item_digest": "a9f849a3af062a3248e970453595fac59528a444ea3dc4d418003e959af10d8b",
+      "baseline_revision": "eeb67b9",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "hook/build.dart",
+          "lines": "154-158,184"
+        }
+      ],
+      "kind": "hook hygiene",
+      "observation": "`cargo build --release` builds into the package root with `workingDirectory: crateDir` (native/tokenizers_ffi/target/) and returns the binary from there; the package directory in the pub cache is modified.",
+      "certainty": "confirmed",
+      "proposed_fix": "Build under `input.outputDirectoryShared` with `--target-dir`.",
+      "related_rule_ids": [],
+      "issue_url": null,
+      "closure_criteria": "cargo build runs with --target-dir under input.outputDirectoryShared and the package directory in the pub cache stays unmodified.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "hf_tokenizers-D004",
+      "source_index": 4,
+      "source_item_digest": "85ac7e25366b905961f61581a21c1495a9d90fea60e57f72328e224ac212f38e",
+      "baseline_revision": "eeb67b9",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "hook/build.dart",
+          "lines": "124-125"
+        }
+      ],
+      "kind": "broad catch",
+      "observation": "There is an unjustified `on Object { return false; }` inside `_download` [internal mapping: J10].",
+      "certainty": "confirmed",
+      "proposed_fix": "Narrow it to `IOException`/`HttpException` or write a comment naming the reason.",
+      "related_rule_ids": [],
+      "issue_url": null,
+      "closure_criteria": "The catch in _download is narrowed to IOException or HttpException or carries a comment naming the accepted failure reasons.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "hf_tokenizers-D005",
+      "source_index": 5,
+      "source_item_digest": "b15b3a9fd81382bfc4eec7e986be503dcf5e447d5524ac7d9285095822807274",
+      "baseline_revision": "eeb67b9",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "lib/hf_tokenizers.dart",
+          "lines": "101-104,152-153,185-186,221-228,255-256,260-261"
+        }
+      ],
+      "kind": "resource cleanup",
+      "observation": "The native frees sit outside finally (fromBytes, idToToken, encode, encodeWithOffsets, decode). If an intermediate step throws, native memory leaks; the siblings use nested try/finally.",
+      "certainty": "confirmed",
+      "proposed_fix": "Nested try/finally.",
+      "related_rule_ids": [
+        "hf_tokenizers/TK-14"
+      ],
+      "issue_url": null,
+      "closure_criteria": "fromBytes, idToToken, encode, encodeWithOffsets and decode release native memory inside nested try/finally blocks.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "hf_tokenizers-D006",
+      "source_index": 6,
+      "source_item_digest": "d7fc7d0f936bf0ba7703107415e548197966154a1e98e3f67f3a298d28c35000",
+      "baseline_revision": "eeb67b9",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "lib/hf_tokenizers.dart",
+          "lines": "101,255"
+        }
+      ],
+      "kind": "inconsistency",
+      "observation": "`_allocUtf8` allocates at least 1 byte; `fromBytes` and `decode` call `calloc(0)` on empty input; there is no test.",
+      "certainty": "confirmed",
+      "proposed_fix": "The same guard + empty-input tests.",
+      "related_rule_ids": [],
+      "issue_url": null,
+      "closure_criteria": "fromBytes and decode allocate at least one byte on empty input, matching _allocUtf8. Empty-input tests cover both entry points.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "hf_tokenizers-D007",
+      "source_index": 7,
+      "source_item_digest": "60991c8714662542f3933c5033a33553afbad1504f1c1002fbf7107c5130e51e",
+      "baseline_revision": "eeb67b9",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "lines": "16-17,31-33"
+        }
+      ],
+      "kind": "CI gap",
+      "observation": "There is no format check and `dart analyze` runs without --fatal-infos; both exist in all six siblings. `permissions: contents: write` is at the workflow level and the test job also runs with write permission.",
+      "certainty": "confirmed",
+      "proposed_fix": "Add the format and --fatal-infos steps; move the write permission to the binaries job only.",
+      "related_rule_ids": [],
+      "issue_url": null,
+      "closure_criteria": "The CI workflow runs a format check and dart analyze with --fatal-infos. Only the binaries job holds the write permission.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "hf_tokenizers-D008",
+      "source_index": 8,
+      "source_item_digest": "c84529f355e40b004be0cc5b67f2ce70d4eef4a0b4fbd9769c7ee8c1cfa79521",
+      "baseline_revision": "eeb67b9",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "test/",
+          "lines": null
+        },
+        {
+          "path": "hook_test.dart",
+          "lines": null
+        },
+        {
+          "path": "hook/build.dart",
+          "lines": "43"
+        }
+      ],
+      "kind": "missing test",
+      "observation": "The hook's `buildCodeAssets` return and the download/source fallback are untested.",
+      "certainty": "confirmed",
+      "proposed_fix": "A hook_test.dart based on the siblings' testBuildHook; a test of the code-asset-free path without network.",
+      "related_rule_ids": [
+        "hf_tokenizers/TK-08"
+      ],
+      "issue_url": null,
+      "closure_criteria": "test/hook_test.dart runs the hook without code assets and without network and covers the download and source fallback branches.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "hf_tokenizers-D009",
+      "source_index": 9,
+      "source_item_digest": "793e2bc40b8c314ff747d9b2d22fea01d53400c75f6c0a084dcdf84b7a755422",
+      "baseline_revision": "eeb67b9",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "hook/build.dart",
+          "lines": "86-89"
+        },
+        {
+          "path": "test/prebuilt_tag_test.dart",
+          "lines": "19-23"
+        }
+      ],
+      "kind": "inconsistency",
+      "observation": "Cargo.lock is missing from the hook's dependency list although the digest test hashes it; a lockfile change does not invalidate the hook cache.",
+      "certainty": "confirmed",
+      "proposed_fix": "Add `crateDir.resolve('Cargo.lock')`.",
+      "related_rule_ids": [
+        "hf_tokenizers/TK-06"
+      ],
+      "issue_url": null,
+      "closure_criteria": "hook/build.dart lists crateDir.resolve('Cargo.lock') among its dependency inputs and a lockfile change invalidates the hook cache.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "hf_tokenizers-D010",
+      "source_index": 10,
+      "source_item_digest": "a6138ba76f2c7a65b033f3948896cd840c8fb49a9fe5e7b526604ab776ff88be",
+      "baseline_revision": "eeb67b9",
+      "status": "open",
+      "size": "medium",
+      "locations": [
+        {
+          "path": "lib/hf_tokenizers.dart",
+          "lines": "268-472"
+        }
+      ],
+      "kind": "single responsibility",
+      "observation": "The budget and chunking policy (about 200 lines, nested loops at 435-470) sits inside the FFI resource-owning Tokenizer class; the whole implementation is in the entry library (488 lines).",
+      "certainty": "confirmed",
+      "proposed_fix": "Enter it in the debt register. Move the algorithms into `lib/src/token_budget.dart`, depending only on encode/encodeWithOffsets and preserving the public signatures; the methods delegate.",
+      "related_rule_ids": [
+        "hf_tokenizers/TK-01",
+        "hf_tokenizers/TK-09"
+      ],
+      "issue_url": null,
+      "closure_criteria": "The budget and chunking algorithms live in lib/src/token_budget.dart behind private helpers and depend only on encode and encodeWithOffsets. The public signatures are unchanged and test/token_budget_test.dart passes.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "hf_tokenizers-D011",
+      "source_index": 11,
+      "source_item_digest": "b6e0640aa7a57d98f2ff8c266d3310902227055e31a7c110d8619c5363a98472",
+      "baseline_revision": "eeb67b9",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "hook/build.dart",
+          "lines": "147-148"
+        },
+        {
+          "path": "MOBILE-FEASIBILITY.md",
+          "lines": null
+        }
+      ],
+      "kind": "untracked follow-up",
+      "observation": "The android/iOS error message shows only the repository address instead of a specific issue. MOBILE-FEASIBILITY.md (2026-08-29, 1.1.0 scope) goes into the archive and its version information is stale.",
+      "certainty": "confirmed",
+      "proposed_fix": "Link it to a specific issue; update the report or add it to .pubignore.",
+      "related_rule_ids": [
+        "hf_tokenizers/TK-11",
+        "hf_tokenizers/TK-12"
+      ],
+      "issue_url": null,
+      "closure_criteria": "The android and iOS rejection message links a specific issue. MOBILE-FEASIBILITY.md is current or excluded from the published archive through .pubignore.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "hf_tokenizers-D012",
+      "source_index": 12,
+      "source_item_digest": "028c00664afc4c5af39cdbb532ae4f30042ed2f303c5cc3598d2c5e7e78fde72",
+      "baseline_revision": "eeb67b9",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "analysis_options.yaml",
+          "lines": "1-6"
+        }
+      ],
+      "kind": "analysis strictness",
+      "observation": "strict-inference and public_member_api_docs are off.",
+      "certainty": "confirmed",
+      "proposed_fix": "Complete the image_ffi settings.",
+      "related_rule_ids": [],
+      "issue_url": null,
+      "closure_criteria": "analysis_options.yaml enables strict-inference and public_member_api_docs together with the other image_ffi settings and dart analyze reports no new diagnostics.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    }
+  ]
+}

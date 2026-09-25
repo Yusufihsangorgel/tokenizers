@@ -120,3 +120,7 @@ dart test
 ```
 
 Changing `native/` requires bumping `_version` and `nativeSourcesDigest` in `hook/build.dart` (see `test/prebuilt_tag_test.dart`). Prebuilts: macOS arm64/x64, Linux x64, Windows x64.
+
+## Contributing
+
+Before changing this repository, read [CONTRIBUTING.md](CONTRIBUTING.md), [package engineering rules](docs/engineering/package.md), and the [debt register](docs/engineering/debt.json). These requirements apply to every contributor. The usage guidance above remains the consumer contract.

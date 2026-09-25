@@ -28,6 +28,7 @@ import 'package:rag_kit/rag_kit.dart';
 /// between consecutive chunks so a sentence split by a window edge survives
 /// whole in one of them.
 final class TokenChunker extends Chunker {
+  /// Creates a token chunker with the given [maxTokens] and [overlapTokens].
   TokenChunker(this._tokenizer, {this.maxTokens = 256, this.overlapTokens = 32})
     : assert(maxTokens > 0),
       assert(overlapTokens >= 0 && overlapTokens < maxTokens);
@@ -41,6 +42,7 @@ final class TokenChunker extends Chunker {
   /// Tokens repeated at the start of the next chunk.
   final int overlapTokens;
 
+  /// Splits [text] into chunks with offsets measured in UTF-16 units.
   @override
   List<Chunk> chunk(String text) {
     if (text.isEmpty) return const [];

@@ -1,3 +1,14 @@
+## Unreleased
+
+- The build hook compiles the Rust crate into the hook's shared output
+  directory instead of `native/tokenizers_ffi/target/` inside the package.
+- The build hook reruns when `Cargo.lock` changes.
+- Native buffers are freed in `finally` blocks, also when a later step
+  throws.
+- `Tokenizer.fromBytes` and `decode` no longer allocate zero bytes on empty
+  input. Empty bytes throw `FormatException` and an empty id list decodes to
+  an empty string.
+
 ## 1.2.2
 
 - The README showed the demo GIF twice, and the first copy linked the

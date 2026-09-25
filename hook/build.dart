@@ -69,6 +69,7 @@ void main(List<String> args) async {
     //    whose target matches: this hook does not cross-compile).
     library ??= await _cargoBuild(
       crateDir,
+      input.outputDirectoryShared,
       localName,
       os,
       arch,
@@ -86,6 +87,7 @@ void main(List<String> args) async {
     output.dependencies.addAll([
       crateDir.resolve('src/lib.rs'),
       crateDir.resolve('Cargo.toml'),
+      crateDir.resolve('Cargo.lock'),
     ]);
   });
 }
@@ -122,6 +124,8 @@ Future<bool> _download(String url, Uri dest) async {
     await response.pipe(file.openWrite());
     return true;
   } on Object {
+    // Any fetch or staging failure should enter the source fallback. If that
+    // fallback also fails, its message retains the failed prebuilt as context.
     return false;
   } finally {
     client.close(force: true);
@@ -130,6 +134,7 @@ Future<bool> _download(String url, Uri dest) async {
 
 Future<Uri> _cargoBuild(
   Uri crateDir,
+  Uri outputDirectoryShared,
   String localName,
   OS os,
   Architecture arch, {
@@ -153,7 +158,12 @@ Future<Uri> _cargoBuild(
   try {
     result = await Process.run(
       _resolveCargo(),
-      ['build', '--release'],
+      [
+        'build',
+        '--release',
+        '--target-dir',
+        outputDirectoryShared.toFilePath(),
+      ],
       workingDirectory: crateDir.toFilePath(),
       environment: _envWithCargoBin(),
     );
@@ -181,7 +191,7 @@ Future<Uri> _cargoBuild(
       ),
     );
   }
-  return crateDir.resolve('target/release/$localName');
+  return outputDirectoryShared.resolve('release/$localName');
 }
 
 /// A build-failure message that names the real first cause. A prebuilt exists

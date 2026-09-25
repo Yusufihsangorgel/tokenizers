@@ -98,14 +98,17 @@ final class Tokenizer implements Finalizable {
   ///
   /// Throws [FormatException] if the bytes are not a valid tokenizer.
   factory Tokenizer.fromBytes(Uint8List json) {
-    final buffer = calloc<Uint8>(json.length);
-    buffer.asTypedList(json.length).setAll(0, json);
-    final handle = tkFromBytes(buffer, json.length);
-    calloc.free(buffer);
-    if (handle == nullptr) {
-      throw const FormatException('Not a valid tokenizer.json');
+    final buffer = calloc<Uint8>(json.isEmpty ? 1 : json.length);
+    try {
+      buffer.asTypedList(json.length).setAll(0, json);
+      final handle = tkFromBytes(buffer, json.length);
+      if (handle == nullptr) {
+        throw const FormatException('Not a valid tokenizer.json');
+      }
+      return Tokenizer._(handle);
+    } finally {
+      calloc.free(buffer);
     }
-    return Tokenizer._(handle);
   }
 
   /// Loads a tokenizer from a `tokenizer.json` file on disk.
@@ -125,13 +128,16 @@ final class Tokenizer implements Finalizable {
   int? tokenToId(String token) {
     _ensureOpen();
     final (input, inputLen) = _allocUtf8(token);
-    final outId = calloc<Uint32>();
     try {
-      final found = tkTokenToId(_handle, input, inputLen, outId);
-      return found ? outId.value : null;
+      final outId = calloc<Uint32>();
+      try {
+        final found = tkTokenToId(_handle, input, inputLen, outId);
+        return found ? outId.value : null;
+      } finally {
+        calloc.free(outId);
+      }
     } finally {
       calloc.free(input);
-      calloc.free(outId);
     }
   }
 
@@ -149,9 +155,11 @@ final class Tokenizer implements Finalizable {
     if (id < 0 || id > _maxTokenId) return null;
     final ptr = tkIdToToken(_handle, id);
     if (ptr == nullptr) return null;
-    final token = ptr.toDartString();
-    tkFreeString(ptr);
-    return token;
+    try {
+      return ptr.toDartString();
+    } finally {
+      tkFreeString(ptr);
+    }
   }
 
   /// The number of tokens [text] encodes to.
@@ -178,16 +186,27 @@ final class Tokenizer implements Finalizable {
   List<int> encode(String text, {bool addSpecialTokens = true}) {
     _ensureOpen();
     final (input, inputLen) = _allocUtf8(text);
-    final outLen = calloc<IntPtr>();
     try {
-      final ptr = tkEncode(_handle, input, inputLen, addSpecialTokens, outLen);
-      if (ptr == nullptr) throw StateError('Failed to encode text');
-      final ids = ptr.asTypedList(outLen.value).toList();
-      tkFreeIds(ptr, outLen.value);
-      return ids;
+      final outLen = calloc<IntPtr>();
+      try {
+        final ptr = tkEncode(
+          _handle,
+          input,
+          inputLen,
+          addSpecialTokens,
+          outLen,
+        );
+        if (ptr == nullptr) throw StateError('Failed to encode text');
+        try {
+          return ptr.asTypedList(outLen.value).toList();
+        } finally {
+          tkFreeIds(ptr, outLen.value);
+        }
+      } finally {
+        calloc.free(outLen);
+      }
     } finally {
       calloc.free(input);
-      calloc.free(outLen);
     }
   }
 
@@ -204,33 +223,43 @@ final class Tokenizer implements Finalizable {
   }) {
     _ensureOpen();
     final (input, inputLen) = _allocUtf8(text);
-    final outLen = calloc<IntPtr>();
-    final outIds = calloc<Pointer<Uint32>>();
     try {
-      final offsetsPtr = tkEncodeOffsets(
-        _handle,
-        input,
-        inputLen,
-        addSpecialTokens,
-        outLen,
-        outIds,
-      );
-      if (offsetsPtr == nullptr) throw StateError('Failed to encode text');
-      final count = outLen.value;
-      final idsPtr = outIds.value;
-      final ids = idsPtr.asTypedList(count);
-      final offsets = offsetsPtr.asTypedList(count * 2);
-      final result = [
-        for (var i = 0; i < count; i++)
-          TokenOffset(ids[i], offsets[i * 2], offsets[i * 2 + 1]),
-      ];
-      tkFreeIds(idsPtr, count);
-      tkFreeIds(offsetsPtr, count * 2);
-      return result;
+      final outLen = calloc<IntPtr>();
+      try {
+        final outIds = calloc<Pointer<Uint32>>();
+        try {
+          final offsetsPtr = tkEncodeOffsets(
+            _handle,
+            input,
+            inputLen,
+            addSpecialTokens,
+            outLen,
+            outIds,
+          );
+          final count = outLen.value;
+          final idsPtr = outIds.value;
+          try {
+            if (offsetsPtr == nullptr || idsPtr == nullptr) {
+              throw StateError('Failed to encode text');
+            }
+            final ids = idsPtr.asTypedList(count);
+            final offsets = offsetsPtr.asTypedList(count * 2);
+            return [
+              for (var i = 0; i < count; i++)
+                TokenOffset(ids[i], offsets[i * 2], offsets[i * 2 + 1]),
+            ];
+          } finally {
+            if (idsPtr != nullptr) tkFreeIds(idsPtr, count);
+            if (offsetsPtr != nullptr) tkFreeIds(offsetsPtr, count * 2);
+          }
+        } finally {
+          calloc.free(outIds);
+        }
+      } finally {
+        calloc.free(outLen);
+      }
     } finally {
       calloc.free(input);
-      calloc.free(outLen);
-      calloc.free(outIds);
     }
   }
 
@@ -252,14 +281,16 @@ final class Tokenizer implements Finalizable {
         );
       }
     }
-    final array = calloc<Uint32>(ids.length);
-    array.asTypedList(ids.length).setAll(0, ids);
+    final array = calloc<Uint32>(ids.isEmpty ? 1 : ids.length);
     try {
+      array.asTypedList(ids.length).setAll(0, ids);
       final ptr = tkDecode(_handle, array, ids.length, skipSpecialTokens);
       if (ptr == nullptr) throw StateError('Failed to decode ids');
-      final text = ptr.toDartString();
-      tkFreeString(ptr);
-      return text;
+      try {
+        return ptr.toDartString();
+      } finally {
+        tkFreeString(ptr);
+      }
     } finally {
       calloc.free(array);
     }

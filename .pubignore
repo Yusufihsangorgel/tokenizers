@@ -5,6 +5,7 @@ build/
 .DS_Store
 pubspec.lock
 native/tokenizers_ffi/target/
+MOBILE-FEASIBILITY.md
 
 # pub.dev fetches README artwork from GitHub raw rather than from the archive,
 # so the only images worth shipping are the two paths `screenshots:` names,

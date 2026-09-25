@@ -50,6 +50,13 @@ void main() {
       );
     });
 
+    test('empty text and id inputs are accepted', () {
+      expect(tk.encode(''), [101, 102]);
+      expect(tk.encode('', addSpecialTokens: false), isEmpty);
+      expect(tk.encodeWithOffsets('', addSpecialTokens: false), isEmpty);
+      expect(tk.decode([]), '');
+    });
+
     test('a U+0000 byte does not truncate the input', () {
       // The old FFI passed a NUL-terminated buffer, so a U+0000 cut the text
       // off at the first NUL and every token after it was lost. With an
@@ -192,6 +199,7 @@ void main() {
       () => Tokenizer.fromBytes(Uint8List.fromList([1, 2, 3])),
       throwsFormatException,
     );
+    expect(() => Tokenizer.fromBytes(Uint8List(0)), throwsFormatException);
   });
 
   test('using a closed tokenizer throws', () {

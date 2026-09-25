@@ -1,6 +1,6 @@
 # Package engineering rules: hf_tokenizers
 
-Rules-Version: hf_tokenizers/0806caa0860a1ba975358ab6232adf7e9ee373f679850c2f2bec5c09cf13fbce
+Rules-Version: hf_tokenizers/fdd53ca785a75f48f11fc6f47fb122695bd3d2d5030dd2e1fe8b393b503d3249
 Core-Version: 1
 Core-Digest: 1825fa7ff346dca23e65b1b3bf9b2e3e06959f1414bae9952d596d2f62f09b8f
 Survey-Digest: f90f45c8a172068c3ed3b9488ba5a7cb4e58efa93c380d2d9a70b399349ec35e
@@ -176,7 +176,7 @@ The complete register is docs/engineering/debt.json.
 - hf_tokenizers-D007 | small | .github/workflows/ci.yml:16-17, 31-33 | CI gap
   Fix: Add the format and --fatal-infos steps; move the write permission to the binaries job only.
   Closure: The CI workflow runs a format check and dart analyze with --fatal-infos. Only the binaries job holds the write permission.
-- hf_tokenizers-D008 | small | test/ (no hook_test.dart); hook/build.dart:43 | missing test
+- hf_tokenizers-D008 | small | test/hook_test.dart (missing); hook/build.dart:43 | missing test
   Fix: A hook_test.dart based on the siblings' testBuildHook; a test of the code-asset-free path without network.
   Closure: test/hook_test.dart runs the hook without code assets and without network and covers the download and source fallback branches.
 - hf_tokenizers-D009 | small | hook/build.dart:86-89 <-> test/prebuilt_tag_test.dart:19-23 | inconsistency

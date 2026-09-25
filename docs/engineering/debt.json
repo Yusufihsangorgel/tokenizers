@@ -181,14 +181,6 @@
       "size": "small",
       "locations": [
         {
-          "path": "test/",
-          "lines": null
-        },
-        {
-          "path": "hook_test.dart",
-          "lines": null
-        },
-        {
           "path": "hook/build.dart",
           "lines": "43"
         }

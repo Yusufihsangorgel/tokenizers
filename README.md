@@ -52,7 +52,8 @@ dart pub add hf_tokenizers
 ```dart
 import 'package:hf_tokenizers/hf_tokenizers.dart';
 
-final tk = Tokenizer.fromFile('bert-base-uncased/tokenizer.json');
+// BERT's tokenizer.json, fetched as shown under "How to fetch one" below.
+final tk = Tokenizer.fromFile('tokenizer.json');
 
 tk.encode('The naïve café in São Paulo', addSpecialTokens: false);
 // [1996, 15743, 7668, 1999, 7509, 9094]
@@ -99,30 +100,16 @@ weights, and `Tokenizer.fromFile` wants that file. The BERT copy in
 `test/fixtures/` is for the tests in this repository; it is not a tokenizer
 for some other model, and it is not licensed as this package is.
 
-### What a model repository actually contains
+### What a model repository contains
 
-Checked against three public Hub trees (2026-08-29):
-
-| File | `google-bert/bert-base-uncased` | `openai-community/gpt2` | `meta-llama/Meta-Llama-3-8B` |
-| ---- | ------------------------------- | ----------------------- | ---------------------------- |
-| `tokenizer.json` | yes (466062 bytes) | yes | yes |
-| `tokenizer_config.json` | yes (48 bytes: `do_lower_case`, `model_max_length`) | yes | yes |
-| `vocab.txt` | yes (WordPiece) | — | — |
-| `vocab.json` / `merges.txt` | — | yes (BPE) | — |
-| `special_tokens_map.json` | — | — | yes |
-| weights (`*.safetensors`, …) | yes | yes | yes |
-| `LICENSE` | yes (Apache 2.0) | no file; card is `mit` | yes (Llama 3 Community) |
-| `USE_POLICY.md` | — | — | yes |
+This repository commits one tokenizer file, `test/fixtures/bert-base-uncased.json`.
+For any other model, fetch the `tokenizer.json` from that model's repository.
 
 `tokenizer.json` is the serialized HuggingFace `tokenizers` pipeline this
 package loads: normalizer, pre-tokenizer, model, post-processor, decoder, added
 tokens. `tokenizer_config.json` is for `transformers`. `vocab.txt` and
 `merges.txt` are what a slow Python tokenizer reads. Passing any of those, or
 ordinary JSON, to `fromFile` throws `FormatException: Not a valid tokenizer.json`.
-
-Llama 3 also ships `original/` with the conversion inputs. The Hub card for
-that repo is `license: llama3` and `gated: manual`: the files are listed, but
-downloading them requires accepting the licence on the Hub.
 
 ### How to fetch one
 
@@ -223,6 +210,8 @@ the input it came from, which is what token-accurate chunking, span
 highlighting, and entity extraction need.
 
 ```dart
+import 'dart:convert';
+
 final text = 'hello world';
 final bytes = utf8.encode(text);
 for (final t in tk.encodeWithOffsets(text, addSpecialTokens: false)) {
@@ -234,11 +223,12 @@ The offsets are **UTF-8 byte** offsets, which is what the underlying crate
 reports. They are not UTF-16 indices. Slice `utf8.encode(text)` rather than
 calling `text.substring`, or the math goes wrong on any non-ASCII input.
 
-![Two rulers over the sentence "The naïve café in São Paulo": the string index ends at 26 while the byte offset ends at 29, pulling one further ahead at each accented character. Below them the six token spans are read twice, and five of the six substring readings return different text while the last throws RangeError.](https://raw.githubusercontent.com/Yusufihsangorgel/tokenizers/main/doc/offsets.png)
+![Two rulers over the sentence "The naïve café in São Paulo": the string index ends at 26 while the byte offset ends at 29, pulling one further ahead at each accented character. Below them the six token spans are read twice: one substring reading agrees, four return different text, and the sixth throws RangeError.](https://raw.githubusercontent.com/Yusufihsangorgel/tokenizers/main/doc/offsets.png)
 
 That sentence is 27 UTF-16 units and 30 bytes. Read its six spans with
-`substring` and five hand back different text while the sixth reaches past the
-end and throws, which leaves the crash as the only one a test would notice.
+`substring` and one agrees, four hand back different text, and the sixth
+reaches past the end and throws, which leaves the crash as the only one a test
+would notice.
 `dart run tool/offsets_figure.dart` draws the picture by running both readings
 and keeping whatever each one returned.
 
@@ -262,9 +252,10 @@ for (final chunk in tk.chunkByTokens(document, 256, overlapTokens: 32)) {
 ```
 
 Both count what the model counts. BERT adds `[CLS]` and `[SEP]`, so a budget of
-512 leaves 510 for text, and a budget smaller than the markers themselves is
-rejected rather than quietly answered with an empty string that would still
-encode to two tokens. Cuts land on token boundaries, which are UTF-8
+512 leaves 510 for text, and a budget that leaves no room for a token of
+text is rejected with an `ArgumentError`, because an empty string would still
+encode to two tokens. The exception is `truncateToTokens` with a budget of 0,
+which returns an empty string. Cuts land on token boundaries, which are UTF-8
 boundaries. No character is split. With no overlap the pieces concatenate back
 to the original text, whitespace included.
 
@@ -296,7 +287,10 @@ characters per token**.
 Whatever the `tokenizer.json` declares. Because it is the real Rust library, the
 full pipeline is applied exactly: normalizers, pre-tokenizers, the model itself
 (BPE, byte-level BPE, WordPiece, Unigram), and post-processors. Load a GPT-2,
-BERT, Llama, or sentence-transformers tokenizer, and the ids match Python.
+BERT, Llama, or sentence-transformers tokenizer and it runs through the same
+crate. The ids for BERT are checked against Python in this repository. No other
+model has a fixture here. Compare a few ids with Python before relying on
+one.
 
 ## Correctness
 
@@ -359,18 +353,13 @@ there. A native library also costs a download and a build hook that a pure-Dart
 package does not.
 
 [`dart_sentencepiece_tokenizer`](https://pub.dev/packages/dart_sentencepiece_tokenizer)
-is the pure-Dart option, and today it is the more widely used of the two. It has
-no dependencies, ships Android and iOS, and reads `tokenizer.json` as well as
-SentencePiece's own `.model` file. Its loader handles the BPE and Unigram
-algorithms that Gemma and Llama ship. Hand it `bert-base-uncased/tokenizer.json`
-and version 1.3.2 stops with `FormatException: Missing model type`: BERT leaves
-`model.type` out of that file, and the loader has no WordPiece branch to fall
-back on. WordPiece is what BERT and the sentence-transformers embedding models
-use.
+is a pure-Dart option and needs no native library. This package supports the
+committed BERT WordPiece fixture. Test any alternative against your model's
+`tokenizer.json` before switching.
 
-That is the line. Reach for this package when the model is BERT-shaped, or when
-matching the reference pipeline exactly is the requirement. Reach for that one
-when the target is a phone.
+That is the line. Reach for this package when matching the reference pipeline
+exactly is the requirement. Reach for a pure-Dart one when the target is a
+phone.
 
 ## License
 

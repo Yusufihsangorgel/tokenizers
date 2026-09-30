@@ -1,3 +1,18 @@
+## 1.2.3
+
+- The first README example loads `tokenizer.json`, the file the fetch command
+  saves, instead of a path that does not exist.
+- The offsets example imports `dart:convert`, which it needs for `utf8`.
+- The offsets text and caption now say one substring reading agrees, four
+  return different text, and one throws.
+- The token budget text says a budget of zero returns an empty string, and
+  that a budget with no room for text is rejected.
+- The table of three model repositories is gone. Nothing in this repository
+  checks it.
+- The comparison with `dart_sentencepiece_tokenizer` no longer states version,
+  dependency or loader details that this repository does not test.
+- The support section says only the BERT ids are checked here.
+
 ## 1.2.2
 
 - The README showed the demo GIF twice, and the first copy linked the

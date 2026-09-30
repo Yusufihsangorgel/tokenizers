@@ -12,6 +12,7 @@
 - The comparison with `dart_sentencepiece_tokenizer` no longer states version,
   dependency or loader details that this repository does not test.
 - The support section says only the BERT ids are checked here.
+- The README says when to use `tiktoken` instead of this package, and when not.
 
 ## 1.2.2
 

@@ -31,6 +31,26 @@ byte offsets, matching what the Rust crate returns (`TokenOffset`,
 `lib/hf_tokenizers.dart:55`). On any text with multi-byte characters the two
 disagree, so a span from one cannot be used to slice for the other.
 
+**Instead of `tiktoken`.** [`tiktoken`](https://pub.dev/packages/tiktoken)
+1.0.3 is a pure-Dart BPE tokeniser for the GPT models, with no dependency
+beyond the Dart SDK. It carries five encodings inside the package: `gpt2`,
+`r50k_base`, `p50k_base`, `p50k_edit` and `cl100k_base`, and maps the model
+names of one hosted API to them
+(`lib/src/core_bpe_constructor.dart`, `lib/src/mappings.dart`). It does not
+read a `tokenizer.json`, its `encode` returns ids with no offsets, and it has
+no `o200k_base`. The newest release on pub.dev is 1.0.3, published in April
+2023.
+
+| You need | Better choice |
+| -------- | ------------- |
+| Ids for a model that ships a `tokenizer.json`, such as a BERT or sentence-transformers model | this package |
+| Spans that index the original text, or a cut on a token boundary | this package (`encodeWithOffsets`, `truncateToTokens`, `chunkByTokens`) |
+| One of the five encodings above and no `tokenizer.json` for it | `tiktoken` |
+| No native library and no download at build time | `tiktoken` |
+
+This repository checks only the BERT WordPiece fixture. For a BPE model, compare
+a few ids with Python before relying on them.
+
 **Reach for it when**
 
 - You count tokens against a real vocabulary for context budgeting or cost.
@@ -354,8 +374,10 @@ package does not.
 
 [`dart_sentencepiece_tokenizer`](https://pub.dev/packages/dart_sentencepiece_tokenizer)
 is a pure-Dart option and needs no native library. This package supports the
-committed BERT WordPiece fixture. Test any alternative against your model's
-`tokenizer.json` before switching.
+committed BERT WordPiece fixture.
+[`tiktoken`](https://pub.dev/packages/tiktoken) is another, for the GPT
+encodings. Test any alternative against your model's `tokenizer.json` before
+switching.
 
 That is the line. Reach for this package when matching the reference pipeline
 exactly is the requirement. Reach for a pure-Dart one when the target is a

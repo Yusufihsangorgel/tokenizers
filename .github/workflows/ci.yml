@@ -37,6 +37,8 @@ jobs:
   # environment.sdk in pubspec.yaml.
   downgrade:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1

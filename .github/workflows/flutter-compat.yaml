@@ -72,7 +72,9 @@ jobs:
         with:
           flutter-version: ${{ matrix.flutter.version }}
           channel: stable
-          cache: true
+          # Not cached. One release takes about 1.7 GB of the 10 GB repository
+          # cache and the matrix needs five of them.
+          cache: false
 
       - name: Install the Linux desktop toolchain
         run: |

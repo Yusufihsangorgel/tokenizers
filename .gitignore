@@ -3,3 +3,4 @@ pubspec.lock
 build/
 .DS_Store
 native/tokenizers_ffi/target/
+tool/golden/target/

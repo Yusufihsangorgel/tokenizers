@@ -89,9 +89,54 @@ void main() {
         lessThanOrEqualTo(1),
       );
     });
+
+    test('a Hangul syllable is kept whole or dropped whole', () {
+      // BERT splits each syllable into two or three jamo tokens, and every one
+      // of them carries the span of the whole syllable.
+      const korean = '안녕하세요 세계';
+      final total = tk.count(korean);
+      for (var budget = 3; budget <= total; budget++) {
+        final head = tk.truncateToTokens(korean, budget);
+        expect(
+          tk.count(head),
+          lessThanOrEqualTo(budget),
+          reason: 'budget $budget gave "$head"',
+        );
+        expect(korean.startsWith(head), isTrue);
+      }
+      // 안 is five tokens with [CLS] and [SEP], and 안녕 is eight.
+      expect(tk.truncateToTokens(korean, 7), '안');
+    });
   });
 
   group('chunkByTokens', () {
+    test('Hangul pieces are never empty and keep to the documented floor', () {
+      // A syllable alone is up to three jamo tokens plus [CLS] and [SEP]. A
+      // budget below five leaves such a piece over budget, and from five on
+      // every piece fits.
+      const korean = '안녕하세요 세계';
+      for (var budget = 3; budget <= 8; budget++) {
+        for (final overlap in [0, 1]) {
+          if (overlap >= budget - 2) continue;
+          final chunks = tk.chunkByTokens(
+            korean,
+            budget,
+            overlapTokens: overlap,
+          );
+          final where = 'budget $budget overlap $overlap gave $chunks';
+          expect(chunks, isNot(contains('')), reason: where);
+          for (final chunk in chunks) {
+            expect(
+              tk.count(chunk),
+              lessThanOrEqualTo(budget < 5 ? 5 : budget),
+              reason: where,
+            );
+          }
+          if (overlap == 0) expect(chunks.join(), korean, reason: where);
+        }
+      }
+    });
+
     test('every chunk fits the budget, measured with the tokenizer', () {
       const budget = 16;
       final chunks = tk.chunkByTokens(_mixed, budget);

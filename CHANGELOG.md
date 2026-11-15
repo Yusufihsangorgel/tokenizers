@@ -16,6 +16,33 @@
 - The package resolves again in apps on Flutter 3.38 to 3.44. The
   `code_assets` constraint is now `>=1.2.0 <3.0.0`. Version 2 of `code_assets`
   needs a newer `meta` than those Flutter releases pin.
+- Fixed `truncateToTokens` on Hangul. BERT turns one syllable into up to
+  three tokens that share its bytes, and the cut could keep only some of them.
+  The prefix it returned then encoded to more tokens than the budget. On
+  `안녕하세요 세계`, 7 of 13 budgets went over. Budget 3 gave `안`, which is
+  five tokens. The cut now keeps a syllable whole or drops it whole, and the
+  result is checked with `count`. The `chunkByTokens` method no longer returns
+  empty pieces for such text, and its documentation says Hangul needs a
+  budget of at least five.
+- The build hook checks each downloaded prebuilt against a SHA-256 pinned in
+  `hook/build.dart` for every v0.5.0 release asset. The download stays in
+  memory until it matches. A mismatch writes nothing and stops the build with
+  both hashes in the message. The hook does not fall back to a source build
+  then. An asset with no pinned hash also stops the build. A library an
+  earlier build left behind is deleted before the download. The download
+  gives up after 30 seconds without progress and falls back to the source
+  build. The `crypto` package moves from the dev dependencies to the
+  dependencies. Every `hooks` 2.x release already depends on it.
+- A golden test compares the Dart API byte for byte with output from the Rust
+  `tokenizers` crate 0.20.4, the version the library locks. The corpus covers
+  ASCII, composed and decomposed accents, combining marks, CJK, Hangul, emoji
+  and ZWJ sequences, right-to-left text, whitespace runs, control characters,
+  the empty string and inputs at the 512-token limit. Each case compares ids,
+  tokens, offsets, both masks and both decodes, with and without special
+  tokens. Long inputs and the Korean case also check `truncateToTokens`
+  against the truncation of the crate, both the tokens it keeps and where the
+  cut lands. The generator is in `tool/golden`, and CONTRIBUTING.md says how
+  to regenerate the expected file.
 
 ## 1.2.2
 

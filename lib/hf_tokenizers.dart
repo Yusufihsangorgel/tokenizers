@@ -282,6 +282,10 @@ final class Tokenizer implements Finalizable {
   /// counts toward the budget the same way the model will count it: with
   /// BERT's `[CLS]` and `[SEP]`, a budget of 512 leaves 510 for text.
   ///
+  /// Tokens that share the bytes of one character stay together. BERT turns a
+  /// Hangul syllable into up to three tokens with the same span, and the cut
+  /// keeps the syllable whole or drops it whole.
+  ///
   /// Returns [text] unchanged when it already fits, and an empty string when
   /// [maxTokens] is 0. Throws [ArgumentError] if [maxTokens] is negative, or
   /// if it is smaller than the number of special tokens the model adds: with
@@ -321,12 +325,19 @@ final class Tokenizer implements Finalizable {
       );
     }
 
-    var cut = 0;
-    for (var i = 0; i < keep && i < spans.length; i++) {
-      if (spans[i].end > cut) cut = spans[i].end;
+    final bytes = utf8.encode(text);
+    // A token that shares bytes with the first dropped one cannot stay
+    // without it. BERT gives every jamo of a Hangul syllable the span of the
+    // whole syllable. The count then confirms the cut fits, as chunkByTokens
+    // does for each piece.
+    for (var n = keep; n > 0; n--) {
+      if (spans[n].start < spans[n - 1].end) continue;
+      final head = utf8.decode(bytes.sublist(0, spans[n - 1].end));
+      if (count(head, addSpecialTokens: addSpecialTokens) <= maxTokens) {
+        return head;
+      }
     }
-    if (cut == 0) return '';
-    return utf8.decode(utf8.encode(text).sublist(0, cut));
+    return '';
   }
 
   /// Splits [text] into consecutive pieces that each encode to at most
@@ -352,9 +363,11 @@ final class Tokenizer implements Finalizable {
   /// context-dependent: a WordPiece continuation such as `##ization` is one
   /// token inside `internationalization` but two when the same bytes lead a
   /// piece. The one case that cannot be made to fit is a budget so small that
-  /// a single token of the input, standing alone, already exceeds it — there
-  /// is nothing left to split. That takes a budget of about three with BERT;
-  /// real embedding limits are nowhere near it.
+  /// the bytes of one token, standing alone, already exceed it. Nothing is
+  /// left to split there. With BERT that takes a budget of about three. Hangul
+  /// needs a budget of at least five, because BERT turns one syllable into up
+  /// to three tokens that share its bytes. Real embedding limits are nowhere
+  /// near it.
   ///
   /// [addSpecialTokens] is passed through, so each piece leaves room for the
   /// markers the model adds. Returns an empty list for empty [text]. Throws
@@ -459,7 +472,9 @@ final class Tokenizer implements Finalizable {
         }
         end--;
       }
-      chunks.add(piece);
+      // Tokens that share bytes with the previous piece leave nothing new to
+      // cut. The jamo of a Hangul syllable do that with BERT.
+      if (piece.isNotEmpty) chunks.add(piece);
       cursor = end == spans.length ? bytes.length : spans[end - 1].end;
       if (end == spans.length) break;
       // Advance by what this piece actually consumed, not by the nominal step,

@@ -319,6 +319,15 @@ ids against known-good values from HuggingFace, including WordPiece splitting
 and a decode round-trip. Token ids that match the reference are the whole point.
 They are checked, never assumed.
 
+A golden test runs the corpus in `test/golden/corpus.json` through the Dart API
+and compares the result byte for byte with what the Rust `tokenizers` crate
+returned for the same inputs, at the version the library locks. The corpus
+covers accents in composed and decomposed form, combining marks, CJK, Hangul,
+emoji and ZWJ sequences, right-to-left text, whitespace runs, control
+characters, the empty string and inputs at the 512-token limit. Each case
+compares ids, tokens, byte offsets and both decodes, with and without special
+tokens. CONTRIBUTING.md says how to regenerate the expected file.
+
 ## Platforms
 
 The native library loads one of two ways: a prebuilt binary fetched from the
@@ -354,10 +363,16 @@ at the missing library rather than at a version. Check yours with
 `ldd --version`.
 
 The source build does not rescue this. The hook falls back to `cargo` only when
-the prebuilt cannot be *downloaded*; a download that succeeds is used as-is, and
-on an older distribution the failure then surfaces when the library is loaded
-rather than at build time. Installing Rust does not change that on its own.
-Lowering the floor means rebuilding the release binaries against an older glibc.
+the prebuilt cannot be *downloaded*. A download that succeeds is used once its
+hash checks out, and on an older distribution the failure then surfaces when
+the library is loaded, not at build time. Installing Rust does not change that
+on its own. Lowering the floor means rebuilding the release binaries against an
+older glibc.
+
+The hook pins the SHA-256 of each prebuilt in `hook/build.dart`. A download
+with a different hash is never written to disk, and the build stops with both
+hashes in the message. The hook does not fall back to a source build in that
+case.
 
 Android and iOS need cross-compiled prebuilts, which are not published yet.
 Adding the package to a mobile Flutter target fails at build time with a message

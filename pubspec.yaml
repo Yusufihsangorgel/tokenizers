@@ -34,11 +34,13 @@ dependencies:
   ffi: ^2.1.0
   hooks: '>=2.0.2 <3.0.0'
   code_assets: '>=1.2.0 <3.0.0'
+  # The build hook hashes each downloaded prebuilt. Every hooks 2.x release
+  # already depends on crypto ^3.0.6, and consumers resolve no new package.
+  crypto: ^3.0.6
 
 dev_dependencies:
   # example/rag_chunking.dart only. Pure Dart with no runtime dependencies,
   # so it costs consumers nothing.
   rag_kit: ^1.0.2
-  crypto: ^3.0.0
   lints: ^6.0.0
   test: ^1.25.0

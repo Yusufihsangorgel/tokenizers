@@ -337,7 +337,7 @@ Two complementary tracks. Do **both**, in the same shape as desktop: prebuilt fi
    - macOS + Xcode: `aarch64-apple-ios`, `aarch64-apple-ios-sim`, optionally `x86_64-apple-ios`
 2. Pass NDK clang / iOS SDK env (the flags that made iOS link). Pin `IPHONEOS_DEPLOYMENT_TARGET` to Flutter's `targetVersion`.
 3. Upload `libtokenizers_ffi-android-arm64.so`, `libtokenizers_ffi-ios-arm64.dylib`, etc. Keep **one logical filename** inside the hook (`libtokenizers_ffi.so` / `.dylib`).
-4. Teach `_prebuiltAssetName` those pairs. Stop throwing on `OS.android` / `OS.iOS`.
+4. Teach `prebuiltAssetName` those pairs and pin their SHA-256 in `prebuiltSha256`. Stop throwing on `OS.android` / `OS.iOS`.
 5. Declare `platforms: android` and `ios` in `pubspec.yaml` only after a real `flutter build`.
 
 **Track B — source fallback in the hook**

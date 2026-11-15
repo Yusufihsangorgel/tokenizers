@@ -1,0 +1,15 @@
+[package]
+name = "golden"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "Writes the expected outputs that test/golden_test.dart compares the Dart API with."
+license = "MIT"
+
+[dependencies]
+# The same requirement and features as native/tokenizers_ffi/Cargo.toml. The
+# lock file started as a copy of that crate's lock, and test/golden_test.dart
+# fails when a package the two share resolves to a different version.
+tokenizers = { version = "0.20", default-features = false, features = ["onig"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

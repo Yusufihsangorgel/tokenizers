@@ -28,7 +28,8 @@ jobs:
     name: >-
       Flutter ${{ matrix.flutter.version }}${{ matrix.flutter.upgrade && ' upgraded' || '' }}
       linux
-    runs-on: ubuntu-latest
+    # Pinned. A newer image may lack libstdc++-12-dev.
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -44,6 +45,12 @@ jobs:
         # gets hooks 2.0.2 and code_assets 1.2.1 up to 3.47. On 3.47 the SDK
         # allows meta ^1.18.3, and `flutter pub upgrade` moves an app to the
         # newer releases. The `upgrade` row covers that path.
+        #
+        # `name=version` is an exact match and `name>=version` accepts that
+        # release or a newer one. The seeded rows are exact because they
+        # prove what an older SDK resolves. The upgraded row and the 3.50 row
+        # take the newest releases and only set a floor, which keeps them
+        # green after the next upstream release.
         flutter:
           - version: 3.38.10
             expect: code_assets=1.2.1 hooks=2.0.2
@@ -55,9 +62,9 @@ jobs:
             expect: code_assets=1.2.1 hooks=2.0.2
           - version: 3.47.9
             upgrade: true
-            expect: code_assets=2.2.0 hooks=2.2.0
+            expect: code_assets>=2.2.0 hooks>=2.2.0
           - version: 3.50.0
-            expect: code_assets=2.2.0 hooks=2.2.0
+            expect: code_assets>=2.2.0 hooks>=2.2.0
     steps:
       - uses: actions/checkout@v4
 
@@ -98,7 +105,8 @@ jobs:
           EXPECT: ${{ matrix.flutter.expect }}
         run: |
           flutter pub deps --json > deps.json
-          # EXPECT is a space separated list of name=version arguments.
+          # EXPECT is a space separated list of name=version and
+          # name>=version arguments.
           # shellcheck disable=SC2086
           dart "$GITHUB_WORKSPACE/tool/ci/check_resolution.dart" deps.json $EXPECT
 

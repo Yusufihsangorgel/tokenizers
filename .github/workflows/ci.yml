@@ -31,14 +31,28 @@ jobs:
       - run: dart pub get
       - run: dart analyze
       - run: dart test
-      # dart test sets the install name of the macOS library to its path under
-      # .dart_tool/lib. A copy of the library it used has to take a name
-      # longer than 175 bytes, which needs the header padding from build.rs.
+      # dart test copies the library the hook declares in its output.json and
+      # sets the install name of the copy to the copy's absolute path. The copy
+      # is in .dart_tool/lib up to Dart 3.13 and in a temporary directory that
+      # is deleted on exit since 3.14, so this checks the declared file. A
+      # 300-byte name only fits with the header padding from build.rs.
       - name: check room for a long install name
         if: ${{ !cancelled() && runner.os == 'macOS' }}
         shell: bash
         run: |
-          cp .dart_tool/lib/libtokenizers_ffi.dylib "$RUNNER_TEMP/rename.dylib"
+          shopt -s nullglob
+          outputs=(.dart_tool/hooks_runner/hf_tokenizers/*/output.json)
+          if [ "${#outputs[@]}" -ne 1 ]; then
+            echo "expected one hook output.json, found ${#outputs[@]}" >&2
+            exit 1
+          fi
+          if [ "$(plutil -extract assets raw -o - "${outputs[0]}")" != 1 ]; then
+            echo "expected one asset in ${outputs[0]}" >&2
+            exit 1
+          fi
+          lib=$(plutil -extract assets.0.encoding.file raw -o - "${outputs[0]}")
+          echo "checking $lib"
+          cp "$lib" "$RUNNER_TEMP/rename.dylib"
           install_name_tool -id "/$(printf 'x%.0s' {1..300})" "$RUNNER_TEMP/rename.dylib"
 
   binaries:

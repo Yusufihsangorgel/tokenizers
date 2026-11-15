@@ -37,7 +37,7 @@ const _version = '0.6.0';
 /// crate and the test goes red until the tag moves and a release carries the
 /// rebuilt binaries.
 const nativeSourcesDigest =
-    '6975ce4b6dcb14bff54ad2b2bb06fcb42775bb854208d2f07e36a8b2f40ca638';
+    '2621b91efa9cf69101080b7d2bb2f173d3d95ac2e9d1d6d3d220ac7e4a8364eb';
 const _releaseRoot =
     'https://github.com/Yusufihsangorgel/tokenizers/releases/download';
 

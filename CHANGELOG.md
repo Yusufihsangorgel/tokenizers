@@ -1,3 +1,24 @@
+## 1.2.4
+
+- The build hook downloads the prebuilt binaries of release `v0.6.0`. They
+  are still built with version 0.20.4 of the Rust `tokenizers` crate.
+- The macOS library of v0.6.0 is linked with room for a longer install name.
+  `dart run` and `dart test` failed with an `install_name_tool` error when
+  the path of `.dart_tool/lib/libtokenizers_ffi.dylib` was longer than 175
+  bytes.
+- A panic in the Rust crate no longer ends the process. The call fails the
+  way it fails for any other error. `fromBytes` throws a `FormatException`,
+  `encode`, `encodeWithOffsets`, `count` and `decode` throw a
+  `StateError`, `tokenToId` and `idToToken` return null, and `vocabSize`
+  returns 0. The panic message goes to stderr. A `Strip` decoder with
+  `start` and `stop` of 1 panics on a token that is its `content` character
+  alone. `decode` of that token used to abort the program and now throws a
+  `StateError`.
+- When `hook/build.dart` pins no hash for an asset under the current release
+  tag, the build hook builds the library from source and downloads nothing.
+  It used to stop with a missing-hash error. A checkout is in that state
+  between moving the tag and recording the hashes of the new release.
+
 ## 1.2.3
 
 - The first README example loads `tokenizer.json`, the file the fetch command

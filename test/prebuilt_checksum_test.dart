@@ -196,22 +196,26 @@ void main() {
   });
 
   group('provideLibrary', () {
-    // What the source build was told about the download, once per call.
-    final sourceBuilds = <bool>[];
-    Future<Uri> sourceBuild({required bool downloadFailed}) async {
-      sourceBuilds.add(downloadFailed);
+    // Why the source build ran, once per call.
+    final sourceBuilds = <hook.SourceBuildReason>[];
+    Future<Uri> sourceBuild({required hook.SourceBuildReason reason}) async {
+      sourceBuilds.add(reason);
       return dir.uri.resolve('from-source');
     }
 
     setUp(sourceBuilds.clear);
 
-    Future<Uri> provide(OS os, Architecture arch) => hook.provideLibrary(
+    Future<Uri> provide(
+      OS os,
+      Architecture arch, {
+      Map<String, String>? pins,
+    }) => hook.provideLibrary(
       os,
       arch,
       dir.uri,
       sourceBuild: sourceBuild,
       releaseRoot: root(),
-      pins: pinned,
+      pins: pins ?? pinned,
     );
 
     test('a hash mismatch stops the build with no source build', () async {
@@ -242,7 +246,7 @@ void main() {
         await provide(OS.macOS, Architecture.arm64),
         dir.uri.resolve('from-source'),
       );
-      expect(sourceBuilds, [true]);
+      expect(sourceBuilds, [hook.SourceBuildReason.downloadFailed]);
     });
 
     test('a target with no prebuilt goes to the source build', () async {
@@ -250,8 +254,22 @@ void main() {
         await provide(OS.linux, Architecture.arm64),
         dir.uri.resolve('from-source'),
       );
-      expect(sourceBuilds, [false]);
+      expect(sourceBuilds, [hook.SourceBuildReason.noPrebuilt]);
       expect(requests, 0);
+    });
+
+    test('a tag with no pinned hash yet goes to the source build', () async {
+      // Only the release before is pinned. The map holds that between moving
+      // the tag and recording the hashes of the new release.
+      final previous = {'v0.0.1/$asset': sha256.convert(library).toString()};
+
+      expect(
+        await provide(OS.macOS, Architecture.arm64, pins: previous),
+        dir.uri.resolve('from-source'),
+      );
+      expect(sourceBuilds, [hook.SourceBuildReason.unpinned]);
+      expect(requests, 0);
+      expect(File.fromUri(dest).existsSync(), isFalse);
     });
   });
 

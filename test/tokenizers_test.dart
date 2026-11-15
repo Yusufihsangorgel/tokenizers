@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:hf_tokenizers/hf_tokenizers.dart';
@@ -214,5 +215,21 @@ void main() {
 
     expect(tk.decode(ids), 'hello world');
     expect(tk.decode(ids, skipSpecialTokens: false), '[CLS] hello world [SEP]');
+  });
+
+  test('a panic in the crate fails the call and keeps the process', () {
+    // The crate's Strip decoder panics on a token it strips from both ends.
+    // With start and stop at 1, the token "a" has its start cut after the
+    // only character and its end cut before it, and slicing between the two
+    // panics. A panic that reaches the C boundary aborts the process, which
+    // here is the test runner.
+    final json =
+        jsonDecode(File(fixture).readAsStringSync()) as Map<String, Object?>;
+    json['decoder'] = {'type': 'Strip', 'content': 'a', 'start': 1, 'stop': 1};
+    final tk = Tokenizer.fromBytes(utf8.encode(jsonEncode(json)));
+    addTearDown(tk.close);
+
+    expect(() => tk.decode([tk.tokenToId('a')!]), throwsStateError);
+    expect(tk.decode([tk.tokenToId('hello')!]), 'hello');
   });
 }

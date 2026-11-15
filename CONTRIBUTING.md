@@ -63,8 +63,11 @@ does, and a new release goes in this order.
    `nativeSourcesDigest`. Publish the GitHub release for that tag. The
    `binaries` job in CI builds the four assets and attaches them.
 2. CI is red from here on. The test in `test/prebuilt_checksum_test.dart`
-   fails while any asset the hook can download has no hash under the new tag,
-   and a build that takes the prebuilt path stops with a missing-hash error.
+   fails while any asset the hook can download has no hash under the new tag.
+   The hook downloads nothing without a hash. It builds the library from the
+   sources under `native/` instead, and the rest of the suite runs against
+   them. The `flutter-compat` workflow fails its check that the prebuilt
+   library was used.
 3. Download each asset of the release and record its hash under the new tag.
 
    ```

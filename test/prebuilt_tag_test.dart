@@ -20,6 +20,7 @@ void main() {
       'native/tokenizers_ffi/Cargo.toml',
       'native/tokenizers_ffi/Cargo.lock',
       'native/tokenizers_ffi/src/lib.rs',
+      'native/tokenizers_ffi/build.rs',
     ];
 
     final input = <int>[];

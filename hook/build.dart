@@ -21,7 +21,11 @@ import 'package:hooks/hooks.dart';
 /// serves the old, NUL-terminated signatures; reusing that tag here would
 /// silently hand the new bindings a binary that reads the wrong argument as
 /// `out_len` and crashes.
-const _version = '0.5.0';
+///
+/// v0.6.0 keeps every signature and the `tokenizers` crate version of v0.5.0.
+/// It returns the error value instead of aborting when the crate panics, and
+/// links the macOS binaries with room for a longer install name.
+const _version = '0.6.0';
 
 /// SHA-256 over the crate sources the binaries under [_version] were built
 /// from, in the order `test/prebuilt_tag_test.dart` hashes them. Public
@@ -33,16 +37,18 @@ const _version = '0.5.0';
 /// crate and the test goes red until the tag moves and a release carries the
 /// rebuilt binaries.
 const nativeSourcesDigest =
-    'ee63b883e1219c17d3c868b20323f3ad8de07d3167aa9a7d449ca1655161fb64';
+    '6975ce4b6dcb14bff54ad2b2bb06fcb42775bb854208d2f07e36a8b2f40ca638';
 const _releaseRoot =
     'https://github.com/Yusufihsangorgel/tokenizers/releases/download';
 
 /// SHA-256 of every prebuilt binary the hook can download, keyed by the path
 /// of the asset under the release download URL.
 ///
-/// The tag in each key is written out by hand. Moving [_version] without
-/// adding the hashes of the new release fails the build with a missing-hash
-/// error, and `test/prebuilt_checksum_test.dart` fails before that.
+/// The tag in each key is written out by hand. After [_version] moves, the
+/// hook has no hash for any asset under the new tag and builds from source on
+/// the targets that have a prebuilt until the hashes of the new release are
+/// added here.
+/// `test/prebuilt_checksum_test.dart` fails for as long as one is missing.
 const prebuiltSha256 = <String, String>{
   'v0.5.0/libtokenizers_ffi-linux-x64.so':
       'f5704a92ea236eb14ddc37d5c9dbbf2caac1cf9eba074ea7b28e9a1afd49a1f8',
@@ -70,12 +76,12 @@ void main(List<String> args) async {
       os,
       arch,
       input.outputDirectory,
-      sourceBuild: ({required downloadFailed}) => _cargoBuild(
+      sourceBuild: ({required reason}) => _cargoBuild(
         crateDir,
         _localLibraryName(os),
         os,
         arch,
-        downloadFailed: downloadFailed,
+        reason: reason,
       ),
     );
 
@@ -90,47 +96,64 @@ void main(List<String> args) async {
     output.dependencies.addAll([
       crateDir.resolve('src/lib.rs'),
       crateDir.resolve('Cargo.toml'),
+      crateDir.resolve('Cargo.lock'),
+      crateDir.resolve('build.rs'),
     ]);
   });
+}
+
+/// Why the hook builds the library from source instead of using a prebuilt.
+enum SourceBuildReason {
+  /// No prebuilt is published for the target.
+  noPrebuilt,
+
+  /// [prebuiltSha256] has no hash for the target's asset under the current
+  /// release tag. The release is not out yet, or its hashes are not recorded.
+  unpinned,
+
+  /// The pinned prebuilt could not be downloaded.
+  downloadFailed,
 }
 
 /// The library for the target, either the checked prebuilt in
 /// [outputDirectory] or what [sourceBuild] produces.
 ///
 /// A prebuilt that fails its hash check throws out of here. The source build
-/// runs only when no prebuilt is published or the download fails. Tests pass
-/// [releaseRoot] and [pins] to serve their own bytes.
+/// runs when no prebuilt is published for the target, when [pins] has no hash
+/// for it under the current tag, or when the download fails. It needs a Rust
+/// toolchain and a host that matches the target, because this hook does not
+/// cross-compile. Tests pass [releaseRoot] and [pins] to serve their own
+/// bytes.
 Future<Uri> provideLibrary(
   OS os,
   Architecture arch,
   Uri outputDirectory, {
-  required Future<Uri> Function({required bool downloadFailed}) sourceBuild,
+  required Future<Uri> Function({required SourceBuildReason reason})
+  sourceBuild,
   String releaseRoot = _releaseRoot,
   Map<String, String> pins = prebuiltSha256,
 }) async {
-  // 1) The prebuilt binary from the release needs no toolchain.
   final asset = prebuiltAssetName(os, arch);
-  var downloadFailed = false;
-  if (asset != null) {
-    final dest = outputDirectory.resolve(_localLibraryName(os));
-    if (await fetchPrebuilt(
-      asset,
-      dest,
-      releaseRoot: releaseRoot,
-      pins: pins,
-    )) {
-      return dest;
-    }
-    // A prebuilt is published for this target but could not be fetched. The
-    // machine may be offline, behind a proxy or rate-limited by GitHub. Fall
-    // through to a source build and remember why. If that also fails, its
-    // message names the real first cause and does not blame the toolchain.
-    downloadFailed = true;
+  if (asset == null) {
+    return sourceBuild(reason: SourceBuildReason.noPrebuilt);
   }
-
-  // 2) Build from source with cargo. That needs a Rust toolchain and a host
-  //    that matches the target, because this hook does not cross-compile.
-  return sourceBuild(downloadFailed: downloadFailed);
+  // The tag moves before its release exists, and the hashes of the release
+  // binaries can only be recorded after that. Until then the sources under
+  // native/ are the only library that matches the bindings, and nothing is
+  // downloaded without a hash to check it against.
+  if (!pins.containsKey(prebuiltPath(asset))) {
+    return sourceBuild(reason: SourceBuildReason.unpinned);
+  }
+  // The prebuilt binary from the release needs no toolchain.
+  final dest = outputDirectory.resolve(_localLibraryName(os));
+  if (await fetchPrebuilt(asset, dest, releaseRoot: releaseRoot, pins: pins)) {
+    return dest;
+  }
+  // A prebuilt is published for this target but could not be fetched. The
+  // machine may be offline, behind a proxy or rate-limited by GitHub. If the
+  // source build also fails, its message names the real first cause and does
+  // not blame the toolchain.
+  return sourceBuild(reason: SourceBuildReason.downloadFailed);
 }
 
 String _localLibraryName(OS os) => switch (os) {
@@ -233,7 +256,7 @@ Future<Uri> _cargoBuild(
   String localName,
   OS os,
   Architecture arch, {
-  required bool downloadFailed,
+  required SourceBuildReason reason,
 }) async {
   // `cargo build` compiles for the host. This hook passes no `--target`, so it
   // can only produce a library for the platform it runs on. A build targeting
@@ -266,7 +289,7 @@ Future<Uri> _cargoBuild(
         os,
         arch,
         'no Rust toolchain was found (${error.message})',
-        downloadFailed: downloadFailed,
+        reason: reason,
       ),
     );
   }
@@ -277,7 +300,7 @@ Future<Uri> _cargoBuild(
         arch,
         'the source build failed (exit ${result.exitCode})\n'
         '${result.stdout}\n${result.stderr}',
-        downloadFailed: downloadFailed,
+        reason: reason,
       ),
     );
   }
@@ -291,17 +314,27 @@ String _sourceBuildMessage(
   OS os,
   Architecture arch,
   String detail, {
-  required bool downloadFailed,
+  required SourceBuildReason reason,
 }) {
-  final lead = downloadFailed
-      ? 'The prebuilt binary for $os $arch could not be downloaded '
-            '(offline, proxied, or rate-limited?), and the source-build '
-            'fallback then failed'
-      : 'No prebuilt binary is published for $os $arch, and the source-build '
-            'fallback failed';
+  final lead = switch (reason) {
+    SourceBuildReason.downloadFailed =>
+      'The prebuilt binary for $os $arch could not be downloaded '
+          '(offline, proxied, or rate-limited?), and the source-build '
+          'fallback then failed',
+    SourceBuildReason.unpinned =>
+      'This hf_tokenizers checkout pins no prebuilt binary for $os $arch '
+          'under release v$_version yet, and the source-build fallback failed',
+    SourceBuildReason.noPrebuilt =>
+      'No prebuilt binary is published for $os $arch, and the source-build '
+          'fallback failed',
+  };
+  final otherwise = reason == SourceBuildReason.unpinned
+      ? 'or depend on a published version of hf_tokenizers, which pins the '
+            'prebuilt binaries of its release.'
+      : 'or build on a target with a published prebuilt (macOS arm64/x64, '
+            'Linux x64, Windows x64).';
   return '$lead: $detail\n'
-      'Install a Rust toolchain from https://rustup.rs, or build on a target '
-      'with a published prebuilt (macOS arm64/x64, Linux x64, Windows x64).';
+      'Install a Rust toolchain from https://rustup.rs, $otherwise';
 }
 
 /// `Process.run` does not inherit the login shell's PATH, so rustup's default

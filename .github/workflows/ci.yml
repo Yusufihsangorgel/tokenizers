@@ -31,6 +31,15 @@ jobs:
       - run: dart pub get
       - run: dart analyze
       - run: dart test
+      # dart test sets the install name of the macOS library to its path under
+      # .dart_tool/lib. A copy of the library it used has to take a name
+      # longer than 175 bytes, which needs the header padding from build.rs.
+      - name: check room for a long install name
+        if: ${{ !cancelled() && runner.os == 'macOS' }}
+        shell: bash
+        run: |
+          cp .dart_tool/lib/libtokenizers_ffi.dylib "$RUNNER_TEMP/rename.dylib"
+          install_name_tool -id "/$(printf 'x%.0s' {1..300})" "$RUNNER_TEMP/rename.dylib"
 
   binaries:
     name: binary (${{ matrix.asset }})

@@ -32,6 +32,21 @@ jobs:
       - run: dart analyze
       - run: dart test
 
+  # Resolves the lowest versions pubspec.yaml allows on the lowest SDK it
+  # allows. A lower bound that is too low fails here. Keep sdk equal to
+  # environment.sdk in pubspec.yaml.
+  downgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.10.0
+      - uses: dtolnay/rust-toolchain@stable
+      - run: dart pub downgrade
+      - run: dart analyze
+      - run: dart test
+
   binaries:
     name: binary (${{ matrix.asset }})
     if: github.event_name == 'release'

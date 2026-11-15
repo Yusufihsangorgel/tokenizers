@@ -43,6 +43,9 @@
   against the truncation of the crate, both the tokens it keeps and where the
   cut lands. The generator is in `tool/golden`, and CONTRIBUTING.md says how
   to regenerate the expected file.
+- Dev dependency bounds raised to `test` `^1.27.0` and `frontend_server_client`
+  `^4.0.0`. With the old bounds `dart pub downgrade` resolved packages that do
+  not compile. CI now tests the lowest versions.
 
 ## 1.2.2
 

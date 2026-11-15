@@ -1,0 +1,123 @@
+name: flutter-compat
+
+# Generates a Flutter app that depends on this checkout, once per supported
+# Flutter release line, and proves the native build works there. Pub has to
+# pick the expected hooks and code_assets. The Linux build has to fetch the
+# prebuilt library from this package's GitHub release and tokenize on the
+# device.
+#
+# Linux only. The build hook throws for Android and iOS by design: no prebuilt
+# is published for them and the cargo fallback builds for the host only. A
+# mobile cell could only ever fail.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Weekly, after ci.yml. New releases of the build packages, a new runner
+  # image or a missing release asset show up here without a push.
+  schedule:
+    - cron: '50 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compat:
+    name: >-
+      Flutter ${{ matrix.flutter.version }}${{ matrix.flutter.upgrade && ' upgraded' || '' }}
+      linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        # Newest stable patch of each line in
+        # https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json
+        #
+        # `expect` is what pub has to resolve. `flutter create` seeds the lock
+        # file with the meta version the SDK itself locks: 1.17.0 on 3.38 and
+        # 3.41, 1.18.0 on 3.44, 1.18.3 on 3.47 and 1.19.0 on 3.50. hooks 2.1.0
+        # needs meta ^1.19.0, and hooks 2.2.0 needs record_use ^1.0.0, which
+        # needs it too. code_assets 2.x needs hooks ^2.2.0. A new app therefore
+        # gets hooks 2.0.2 and code_assets 1.2.1 up to 3.47. On 3.47 the SDK
+        # allows meta ^1.18.3, and `flutter pub upgrade` moves an app to the
+        # newer releases. The `upgrade` row covers that path.
+        flutter:
+          - version: 3.38.10
+            expect: code_assets=1.2.1 hooks=2.0.2
+          - version: 3.41.9
+            expect: code_assets=1.2.1 hooks=2.0.2
+          - version: 3.44.9
+            expect: code_assets=1.2.1 hooks=2.0.2
+          - version: 3.47.9
+            expect: code_assets=1.2.1 hooks=2.0.2
+          - version: 3.47.9
+            upgrade: true
+            expect: code_assets=2.2.0 hooks=2.2.0
+          - version: 3.50.0
+            expect: code_assets=2.2.0 hooks=2.2.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter.version }}
+          channel: stable
+          cache: true
+
+      - name: Install the Linux desktop toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libstdc++-12-dev xvfb
+
+      - name: Create the consumer app
+        working-directory: ${{ runner.temp }}
+        run: flutter create --platforms=linux --project-name compat_app compat_app
+
+      # Copies the tokenize test and the BERT tokenizer.json in, then depends
+      # on this checkout by path.
+      - name: Add hf_tokenizers
+        run: |
+          dart tool/ci/prepare_app.dart "$RUNNER_TEMP/compat_app"
+          cd "$RUNNER_TEMP/compat_app"
+          flutter pub add "hf_tokenizers:{\"path\":\"$GITHUB_WORKSPACE\"}" \
+            'dev:integration_test:{"sdk":"flutter"}'
+          flutter pub get
+
+      - name: Upgrade within the SDK constraints
+        if: matrix.flutter.upgrade
+        working-directory: ${{ runner.temp }}/compat_app
+        run: flutter pub upgrade
+
+      - name: Check resolved versions
+        working-directory: ${{ runner.temp }}/compat_app
+        env:
+          EXPECT: ${{ matrix.flutter.expect }}
+        run: |
+          flutter pub deps --json > deps.json
+          # EXPECT is a space separated list of name=version arguments.
+          # shellcheck disable=SC2086
+          dart "$GITHUB_WORKSPACE/tool/ci/check_resolution.dart" deps.json $EXPECT
+
+      - name: Build for Linux
+        working-directory: ${{ runner.temp }}/compat_app
+        run: flutter build linux --debug
+
+      - name: Tokenize on Linux
+        working-directory: ${{ runner.temp }}/compat_app
+        run: xvfb-run -a flutter test integration_test -d linux
+
+      # The hook falls back to `cargo build` in native/tokenizers_ffi when the
+      # download fails, and the runner image ships cargo. The steps above pass
+      # either way. cargo always writes a target directory there. Its absence
+      # shows the library came from the release.
+      - name: Check the prebuilt library was used
+        run: |
+          if [ -e native/tokenizers_ffi/target ]; then
+            echo 'cargo built the library, the release download failed' >&2
+            exit 1
+          fi
+          echo 'no cargo build in native/tokenizers_ffi'

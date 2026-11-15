@@ -13,6 +13,9 @@
   dependency or loader details that this repository does not test.
 - The support section says only the BERT ids are checked here.
 - The README says when to use `tiktoken` instead of this package, and when not.
+- The package resolves again in apps on Flutter 3.38 to 3.44. The
+  `code_assets` constraint is now `>=1.2.0 <3.0.0`. Version 2 of `code_assets`
+  needs a newer `meta` than those Flutter releases pin.
 
 ## 1.2.2
 

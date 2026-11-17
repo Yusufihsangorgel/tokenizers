@@ -1,3 +1,9 @@
+## 1.2.4
+
+- pub.dev left the offsets figure out of the 1.2.3 screenshots. Its caption
+  was 179 characters, and pub.dev rejects a caption over 160. That also cost
+  10 pub points. The caption now has 156 characters. No code changed.
+
 ## 1.2.3
 
 - The first README example loads `tokenizer.json`, the file the fetch command
